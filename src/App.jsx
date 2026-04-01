@@ -136,6 +136,15 @@ function App() {
               const budgetAtualizado = moveExpense(selectedBudgetIndex, fromCat, expIndex, toCat)
               setSelectedBudget(budgetAtualizado)
             }}
+            onUpdateStatus={(catIndex, expIndex, status) => {
+              const budgetAtualizado = updateExpense(
+                selectedBudgetIndex,
+                catIndex,
+                expIndex,
+                { ...selectedBudget.categories[catIndex].expenses[expIndex], status }
+              )
+              setSelectedBudget(budgetAtualizado)
+            }}
           />
         </div>
       )}

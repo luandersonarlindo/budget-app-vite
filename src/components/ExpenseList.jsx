@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Progress } from "@/components/ui/progress"
 
-function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense }) {
+function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, onUpdateStatus }) {
     return (
         <div>
             {budget.categories.map((category, catIndex) => {
@@ -73,6 +73,20 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense }) 
                                                     })}
                                             </SelectContent>
                                         </Select>
+
+                                        <Select
+                                            value={expense.status || 'pendente'}
+                                            onValueChange={(value) => onUpdateStatus(catIndex, expIndex, value)}
+                                        >
+                                            <SelectTrigger className={`w-36 ${getStatusColor(expense.status || 'pendente')}`}>
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="pendente">Pendente</SelectItem>
+                                                <SelectItem value="pago">Pago</SelectItem>
+                                                <SelectItem value="nao_pago">Cancelado</SelectItem>
+                                            </SelectContent>
+                                        </Select>
                                     </CardContent>
                                 </Card>
                             ))}
@@ -85,6 +99,12 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense }) 
             })}
         </div>
     )
+}
+
+function getStatusColor(status) {
+    if (status === 'pago') return 'border-green-500 text-green-700 bg-green-50'
+    if (status === 'nao_pago') return 'border-orange-500 text-orange-700 bg-orange-50'
+    return 'border-yellow-500 text-yellow-700 bg-yellow-50'
 }
 
 export default ExpenseList

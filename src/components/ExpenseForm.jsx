@@ -16,7 +16,11 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
 
         onSave({
             categoryIndex: parseInt(categoryIndex),
-            expense: { description: descricao, value: parseUserValue(valor) }
+            expense: {
+                description: descricao,
+                value: parseUserValue(valor),
+                status: expenseToEdit?.status || 'pendente'
+            }
         })
 
         setDescricao('')
