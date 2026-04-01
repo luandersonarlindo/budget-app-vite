@@ -4,18 +4,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { maskCurrency, parseUserValue } from '../utils/formatters';
 
 function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
     const [categoryIndex, setCategoryIndex] = useState(expenseToEdit ? expenseToEdit.categoryIndex : 0)
     const [descricao, setDescricao] = useState(expenseToEdit ? expenseToEdit.description : '')
-    const [valor, setValor] = useState(expenseToEdit ? expenseToEdit.value : '')
+    const [valor, setValor] = useState(expenseToEdit ? new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(expenseToEdit.value) : '0,00')
 
     function handleSalvar() {
         if (descricao.trim() === '' || valor === '') return
 
         onSave({
             categoryIndex: parseInt(categoryIndex),
-            expense: { description: descricao, value: parseFloat(valor) }
+            expense: { description: descricao, value: parseUserValue(valor) }
         })
 
         setDescricao('')
@@ -53,7 +54,7 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
                     </div>
                     <div>
                         <Label className="mb-2" htmlFor="valor">Valor</Label>
-                        <Input id="valor" type="number" min={0} value={valor} onChange={(e) => setValor(e.target.value)} />
+                        <Input id="valor" type="text" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))} />
                     </div>
 
                     <div className="flex gap-2">

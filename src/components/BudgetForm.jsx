@@ -1,15 +1,16 @@
 import { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { maskCurrency, parseUserValue } from '../utils/formatters';
+import { Alert, AlertDescription } from './ui/alert';
+import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
-import { Checkbox } from './ui/checkbox';
-import { Alert, AlertDescription } from './ui/alert'
 
 function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
     const [nome, setNome] = useState(budgetToEdit?.name || '')
-    const [valor, setValor] = useState(budgetToEdit?.value || '')
+    const [valor, setValor] = useState( budgetToEdit ? new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(budgetToEdit.value) : '0,00')
     const [personalizado, setPersonalizado] = useState(false)
     const [categorias, setCategorias] = useState(() => {
         if (budgetToEdit) {
@@ -45,7 +46,7 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
 
         const novoOrcamento = {
             name: nome,
-            value: parseFloat(valor),
+            value: parseUserValue(valor),
             categories: personalizado
                 ? categorias.filter(cat => cat.selected)
                 : (budgetToEdit
@@ -81,7 +82,7 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
 
                     <div>
                         <Label className="mb-2" htmlFor="valor">Valor</Label>
-                        <Input id="valor" type="number" min={0} value={valor} onChange={(e) => setValor(e.target.value)} />
+                        <Input id="valor" type="text" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))}/>
                     </div>
 
                     <div className="col-span-1 md:col-span-2 lg:col-span-3">
