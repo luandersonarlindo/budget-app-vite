@@ -54,7 +54,7 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
                     </div>
                     <div>
                         <Label className="mb-2" htmlFor="valor">Valor</Label>
-                        <Input id="valor" type="text" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))} />
+                        <Input id="valor" type="text" inputMode="numeric" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))} />
                     </div>
 
                     <div className="flex gap-2">

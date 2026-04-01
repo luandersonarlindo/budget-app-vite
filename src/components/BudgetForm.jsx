@@ -82,7 +82,7 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
 
                     <div>
                         <Label className="mb-2" htmlFor="valor">Valor</Label>
-                        <Input id="valor" type="text" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))}/>
+                        <Input id="valor" type="text" inputMode="numeric" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))}/>
                     </div>
 
                     <div className="col-span-1 md:col-span-2 lg:col-span-3">
