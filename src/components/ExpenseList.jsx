@@ -1,14 +1,16 @@
+import { Field, FieldLabel } from "@/components/ui/field"
+import { Progress } from "@/components/ui/progress"
+import { Receipt } from 'lucide-react'
 import {
     Select, SelectContent,
     SelectItem, SelectTrigger, SelectValue
 } from '../components/ui/select'
 import { formatCurrency } from '../utils/formatters'
+import EmptyState from './EmptyState'
 import { Button } from './ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
-import { Field, FieldLabel } from "@/components/ui/field"
-import { Progress } from "@/components/ui/progress"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 
-function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, onUpdateStatus }) {
+function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, onUpdateStatus, onAddNew }) {
     return (
         <div>
             {budget.categories.map((category, catIndex) => {
@@ -46,7 +48,15 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {category.expenses.map((expense, expIndex) => (
+                            {category.expenses.length === 0 ? (
+                                <EmptyState
+                                    icon={Receipt}
+                                    title="Nenhuma despesa"
+                                    description="Adicione a primeira despesa nesta categoria."
+                                    actionLabel="Adicionar Despesa"
+                                    onAction={onAddNew}
+                                />
+                            ) : (category.expenses.map((expense, expIndex) => (
                                 <Card key={expIndex}>
                                     <CardHeader>
                                         <CardTitle>{expense.description}</CardTitle>
@@ -89,11 +99,9 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                         </Select>
                                     </CardContent>
                                 </Card>
-                            ))}
+                            )))
+                            }
                         </CardContent>
-                        <CardFooter>
-                            <CardTitle>{category.expenses.length === 0 && <p>Nenhuma despesa.</p>}</CardTitle>
-                        </CardFooter>
                     </Card>
                 )
             })}

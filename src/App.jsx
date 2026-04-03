@@ -74,6 +74,7 @@ function App() {
               setTela('formulario')
             }}
             onCopy={copyBudget}
+            onAddNew={() => setTela('formulario')}
           />
 
         </div>
@@ -145,6 +146,7 @@ function App() {
               )
               setSelectedBudget(budgetAtualizado)
             }}
+            onAddNew={() => setTela('formularioDespesa')}
           />
         </div>
       )}
@@ -227,7 +229,7 @@ function App() {
                 setCategoryToRemove(category)
               }
             }}
-
+            onAddNew={() => setTela('formularioCategoria')}
           />
         </div>
       )}

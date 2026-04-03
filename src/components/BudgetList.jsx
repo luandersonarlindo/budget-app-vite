@@ -1,14 +1,24 @@
-import { Button } from '../components/ui/button'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../components/ui/card'
+import { PiggyBank } from 'lucide-react'
+import EmptyState from './EmptyState'
+import { Button } from './ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from './ui/card'
 import { formatCurrency } from '../utils/formatters'
 
-function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy }) {
+function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy, onAddNew }) {
     if (budgets.length === 0) {
-        return <p>Nenhum orçamento cadastrado.</p>
+        return (
+            <EmptyState
+                icon={PiggyBank}
+                title="Nenhum orçamento cadastrado"
+                description="Crie seu primeiro orçamento para começar a controlar suas finanças."
+                actionLabel="Adicionar Orçamento"
+                onAction={onAddNew}
+            />
+        )
     }
 
     return (
-        <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {budgets.map((budget, index) => (
                 <Card key={index} className="mb-4">
                     <CardHeader>
@@ -16,7 +26,7 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy }) {
                     </CardHeader>
                     <CardContent>
                         <p>{formatCurrency(budget.value)}</p>
-                    </CardContent>  
+                    </CardContent>
                     <CardFooter className="flex flex-wrap gap-2">
                         <Button onClick={() => onSelect(budget, index)}>Ver despesas</Button>
                         <Button variant="outline" onClick={() => onEdit(index)}>Editar</Button>
@@ -25,7 +35,7 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy }) {
                     </CardFooter>
                 </Card>
             ))}
-        </ul>
+        </div>
     )
 }
 

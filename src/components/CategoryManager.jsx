@@ -1,9 +1,13 @@
-import { Badge } from './ui/badge';
+import { Tag } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../components/ui/card';
+import EmptyState from './EmptyState';
+import { Badge } from './ui/badge';
 
-const CategoryManager = ({ categories, onEdit, onRemove }) => {
+const CategoryManager = ({ categories, onEdit, onRemove, onAddNew }) => {
+
     const hasCategories = Array.isArray(categories) && categories.length > 0;
+    const hasCustomCategories = categories.some(cat => !cat.isDefault)
 
     return (
         <div>
@@ -14,7 +18,7 @@ const CategoryManager = ({ categories, onEdit, onRemove }) => {
                 </CardHeader>
 
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {hasCategories ? (
+                    {hasCategories && (
                         categories.map((cat) => {
                             const key = cat.id != null ? cat.id : cat.name;
                             const description = cat.description || '';
@@ -39,12 +43,20 @@ const CategoryManager = ({ categories, onEdit, onRemove }) => {
                                 </Card>
                             );
                         })
-                    ) : (
-                        <CardContent>
-                            Nenhuma categoria cadastrada.
-                        </CardContent>
                     )}
                 </CardContent>
+
+                <CardFooter className="grid grid-cols-1">
+                    {!hasCustomCategories && (
+                        <EmptyState
+                            icon={Tag}
+                            title="Nenhuma categoria personalizada"
+                            description="Crie categorias personalizadas para organizar melhor seus orçamentos."
+                            actionLabel="Adicionar Categoria"
+                            onAction={onAddNew}
+                        />
+                    )}
+                </CardFooter>
             </Card>
         </div>
     );
