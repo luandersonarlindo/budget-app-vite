@@ -22,6 +22,18 @@ function CategoryForm({ onSave, onCancel, categoryToEdit }) {
                 <CardTitle>{categoryToEdit ? 'Editar Categoria' : 'Adicionar Categoria'}</CardTitle>
             </CardHeader>
 
+            {!categoryToEdit && (
+                <div className="px-6 pb-2">
+                    <p className="text-sm font-medium mb-2">Como cadastrar uma categoria:</p>
+                    <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                        <li>Informe um nome claro para a categoria, como "Pets" ou "Saúde"</li>
+                        <li>Adicione uma descrição explicando o que essa categoria representa</li>
+                        <li>Defina um percentual padrão sugerido para essa categoria</li>
+                        <li>O percentual pode ser ajustado ao criar cada orçamento</li>
+                    </ol>
+                </div>
+            )}
+
             <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="mb-4">
                     <Label className="mb-2" htmlFor="categoryName">Nome da Categoria</Label>

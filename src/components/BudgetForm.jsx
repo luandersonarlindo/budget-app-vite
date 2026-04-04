@@ -10,7 +10,7 @@ import { Switch } from './ui/switch';
 
 function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
     const [nome, setNome] = useState(budgetToEdit?.name || '')
-    const [valor, setValor] = useState( budgetToEdit ? new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(budgetToEdit.value) : '0,00')
+    const [valor, setValor] = useState(budgetToEdit ? new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(budgetToEdit.value) : '0,00')
     const [personalizado, setPersonalizado] = useState(false)
     const [categorias, setCategorias] = useState(() => {
         if (budgetToEdit) {
@@ -74,6 +74,19 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
                     <CardTitle>{budgetToEdit ? 'Editar Orçamento' : 'Novo Orçamento'}</CardTitle>
                 </CardHeader>
 
+                {!budgetToEdit && (
+                    <div className="px-6 pb-2">
+                        <p className="text-sm font-medium mb-2">Como cadastrar um orçamento:</p>
+                        <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                            <li>Informe um nome identificador, como "Jan-2026"</li>
+                            <li>Informe o valor total do orçamento do período</li>
+                            <li>Por padrão as categorias seguem a regra 50/20/30</li>
+                            <li>Ative "Personalizar categorias" para escolher quais usar e definir percentuais</li>
+                            <li>A soma dos percentuais das categorias selecionadas deve ser 100%</li>
+                        </ol>
+                    </div>
+                )}
+
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <Label className="mb-2" htmlFor="nome">Nome do orçamento</Label>
@@ -82,7 +95,7 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
 
                     <div>
                         <Label className="mb-2" htmlFor="valor">Valor</Label>
-                        <Input id="valor" type="text" inputMode="numeric" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))}/>
+                        <Input id="valor" type="text" inputMode="numeric" value={valor} onChange={(e) => setValor(maskCurrency(e.target.value))} />
                     </div>
 
                     <div className="col-span-1 md:col-span-2 lg:col-span-3">

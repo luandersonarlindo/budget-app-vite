@@ -34,6 +34,18 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
                     <CardTitle>{expenseToEdit ? 'Editar Despesa' : 'Adicionar Despesa'}</CardTitle>
                 </CardHeader>
 
+                {!expenseToEdit && (
+                    <div className="px-6 pb-2">
+                        <p className="text-sm font-medium mb-2">Como cadastrar uma despesa:</p>
+                        <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
+                            <li>Selecione a categoria que melhor classifica a despesa</li>
+                            <li>Informe uma descrição clara, como "Aluguel" ou "Mercado"</li>
+                            <li>Informe o valor da despesa</li>
+                            <li>O status padrão é "Pendente" — altere conforme o pagamento</li>
+                        </ol>
+                    </div>
+                )}
+
                 <CardContent className="flex flex-col gap-4">
                     <div>
                         <Label className="mb-2" htmlFor="categoria">Categoria</Label>
