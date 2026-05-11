@@ -5,8 +5,9 @@ import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
-import { formatCurrency } from '../utils/formatters'
+import { formatCurrency, maskCurrency, parseUserValue } from '../utils/formatters'
 import useBusiness from '../hooks/useBusiness'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 
 function BusinessModule() {
     const {
@@ -54,6 +55,19 @@ function BusinessModule() {
         return { income: totalIncome, expense: totalExpense, result, margin }
     }, [selectedPeriod])
 
+    const chartData = useMemo(() => {
+        return periods.map(period => {
+            const income = period.incomes.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+            const expense = period.expenses.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+
+            return {
+                name: period.name,
+                income,
+                expense
+            }
+        })
+    }, [periods])
+
     return (
         <div>
             {tela === 'listaPeriodos' && (
@@ -67,6 +81,27 @@ function BusinessModule() {
                             Adicionar Período
                         </Button>
                     </div>
+
+                    {chartData.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Receitas vs Despesas por período</CardTitle>
+                            </CardHeader>
+                            <CardContent className="h-80">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart data={chartData}>
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="name" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Legend />
+                                        <Bar dataKey="income" name="Receitas" fill="#22c55e" />
+                                        <Bar dataKey="expense" name="Despesas" fill="#ef4444" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {periods.map(period => {
@@ -145,9 +180,11 @@ function BusinessModule() {
                                 </ol>
                             </div>
                         )}
-                        <div className="space-y-2">
-                            <Label>Nome do período</Label>
+                        <div>
+                            <Label className="mb-2" htmlFor="periodName">Nome do período</Label>
                             <Input
+                                id="periodName"
+                                type="text"
                                 value={periodName}
                                 onChange={(event) => setPeriodName(event.target.value)}
                                 placeholder="Ex: Maio 2026"
@@ -325,26 +362,31 @@ function BusinessModule() {
                                 </ol>
                             </div>
                         )}
-                        <div className="space-y-2">
-                            <Label>Descrição</Label>
+                        <div>
+                            <Label className="mb-2" htmlFor="incomeDescription">Descrição</Label>
                             <Input
+                                id="incomeDescription"
+                                type="text"
                                 value={incomeDescription}
                                 onChange={(event) => setIncomeDescription(event.target.value)}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Valor</Label>
+                        <div>
+                            <Label className="mb-2" htmlFor="incomeValue">Valor</Label>
                             <Input
-                                type="number"
+                                id="incomeValue"
+                                type="text"
+                                inputMode="numeric"
                                 value={incomeValue}
-                                onChange={(event) => setIncomeValue(event.target.value)}
+                                placeholder="0,00"
+                                onChange={(event) => setIncomeValue(maskCurrency(event.target.value))}
                             />
                         </div>
 
                         <div className="flex gap-2">
                             <Button
                                 onClick={() => {
-                                    const value = Number(incomeValue)
+                                    const value = parseUserValue(incomeValue)
                                     if (!incomeDescription.trim()) return
                                     if (incomeToEdit) {
                                         updateIncome(selectedPeriod.id, incomeToEdit.id, {
@@ -397,26 +439,31 @@ function BusinessModule() {
                                 </ol>
                             </div>
                         )}
-                        <div className="space-y-2">
-                            <Label>Descrição</Label>
+                        <div>
+                            <Label className="mb-2" htmlFor="expenseDescription">Descrição</Label>
                             <Input
+                                id="expenseDescription"
+                                type="text"
                                 value={expenseDescription}
                                 onChange={(event) => setExpenseDescription(event.target.value)}
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Valor</Label>
+                        <div>
+                            <Label className="mb-2" htmlFor="expenseValue">Valor</Label>
                             <Input
-                                type="number"
+                                id="expenseValue"
+                                type="text"
+                                inputMode="numeric"
                                 value={expenseValue}
-                                onChange={(event) => setExpenseValue(event.target.value)}
+                                placeholder="0,00"
+                                onChange={(event) => setExpenseValue(maskCurrency(event.target.value))}
                             />
                         </div>
 
                         <div className="flex gap-2">
                             <Button
                                 onClick={() => {
-                                    const value = Number(expenseValue)
+                                    const value = parseUserValue(expenseValue)
                                     if (!expenseDescription.trim()) return
                                     if (expenseToEdit) {
                                         updateExpense(selectedPeriod.id, expenseToEdit.id, {
