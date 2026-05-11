@@ -163,6 +163,40 @@ Os dados são salvos no `localStorage` dentro de:
 - [`useBudgets`](src/hooks/useBudgets.js)
 - [`useCategories`](src/hooks/useCategories.js)
 
+### O que é `useEffect`
+`useEffect` é o lugar certo para efeitos colaterais — coisas que precisam acontecer **depois** que o React atualiza a tela.
+Neste projeto, ele é usado para persistir dados no `localStorage` sempre que o estado muda.
+
+Exemplo real:
+```jsx
+useEffect(() => {
+   localStorage.setItem('budgets', JSON.stringify(budgets))
+}, [budgets])
+```
+
+Por que faz sentido aqui:
+- garante que o valor salvo seja o mais recente;
+- evita espalhar `localStorage.setItem` por várias funções;
+- centraliza o efeito colateral no lugar certo.
+
+### O que é `useMemo`
+`useMemo` serve para declarar valores **derivados** — resultados calculados a partir de outros dados, e não um estado próprio.
+Ele deixa explícito que esse valor só deve mudar quando as dependências mudarem.
+
+Exemplo real:
+```jsx
+const totals = useMemo(() => {
+   const totalIncome = selectedPeriod.incomes.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+   const totalExpense = selectedPeriod.expenses.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+   return { totalIncome, totalExpense }
+}, [selectedPeriod])
+```
+
+Por que faz sentido aqui:
+- o valor é calculado, não editado diretamente;
+- evita recomputação quando nada relevante mudou;
+- melhora a legibilidade do código.
+
 ---
 
 ## 5) Como o app funciona (passo a passo)
