@@ -92,82 +92,82 @@ function BusinessModule() {
                         />
                     ) : (
                         <>
-                    <div className="flex flex-wrap gap-2">
-                        <Button onClick={() => {
-                            setPeriodToEdit(null)
-                            setPeriodName('')
-                            setTela('formularioPeriodo')
-                        }}>
-                            Adicionar Período
-                        </Button>
-                    </div>
+                            <div className="flex flex-wrap gap-2">
+                                <Button onClick={() => {
+                                    setPeriodToEdit(null)
+                                    setPeriodName('')
+                                    setTela('formularioPeriodo')
+                                }}>
+                                    Adicionar Período
+                                </Button>
+                            </div>
 
-                    <PeriodCharts chartData={chartData} />
+                            <PeriodCharts chartData={chartData} />
 
-                    <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                        {periods.map(period => {
-                            const totalIncome = period.incomes.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
-                            const totalExpense = period.expenses.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
-                            const result = totalIncome - totalExpense
-                            const margin = totalIncome > 0 ? (result / totalIncome) * 100 : 0
+                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                                {periods.map(period => {
+                                    const totalIncome = period.incomes.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+                                    const totalExpense = period.expenses.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
+                                    const result = totalIncome - totalExpense
+                                    const margin = totalIncome > 0 ? (result / totalIncome) * 100 : 0
 
-                            return (
-                                <Card key={period.id}>
-                                    <CardHeader>
-                                        <CardTitle>{period.name}</CardTitle>
-                                    </CardHeader>
-                                    <CardContent className="space-y-2">
-                                        <div className="text-sm text-muted-foreground">
-                                            Receitas: {formatCurrency(totalIncome)}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Despesas: {formatCurrency(totalExpense)}
-                                        </div>
-                                        <div className="text-sm font-medium">
-                                            Resultado: {formatCurrency(result)}
-                                        </div>
-                                        <div className="text-sm text-muted-foreground">
-                                            Margem: {margin.toFixed(1)}%
-                                        </div>
+                                    return (
+                                        <Card key={period.id}>
+                                            <CardHeader>
+                                                <CardTitle>{period.name}</CardTitle>
+                                            </CardHeader>
+                                            <CardContent className="space-y-2">
+                                                <div className="text-sm text-muted-foreground">
+                                                    Receitas: {formatCurrency(totalIncome)}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    Despesas: {formatCurrency(totalExpense)}
+                                                </div>
+                                                <div className="text-sm font-medium">
+                                                    Resultado: {formatCurrency(result)}
+                                                </div>
+                                                <div className="text-sm text-muted-foreground">
+                                                    Margem: {margin.toFixed(1)}%
+                                                </div>
 
-                                        <div className="flex flex-wrap gap-2 pt-2">
-                                            <Button
-                                                variant="default"
-                                                onClick={() => {
-                                                    setSelectedPeriodId(period.id)
-                                                    setTela('detalhePeriodo')
-                                                }}
-                                            >
-                                                Detalhes
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                onClick={() => {
-                                                    setPeriodToEdit(period)
-                                                    setPeriodName(period.name)
-                                                    setTela('formularioPeriodo')
-                                                }}
-                                            >
-                                                Editar
-                                            </Button>
-                                            <Button
-                                                variant="secondary"
-                                                onClick={() => copyPeriod(period.id, `${period.name} (Cópia)`)}
-                                            >
-                                                Copiar
-                                            </Button>
-                                            <Button
-                                                variant="destructive"
-                                                onClick={() => setPeriodToRemove(period)}
-                                            >
-                                                Remover
-                                            </Button>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            )
-                        })}
-                    </div>
+                                                <div className="flex flex-wrap gap-2 pt-2">
+                                                    <Button
+                                                        variant="default"
+                                                        onClick={() => {
+                                                            setSelectedPeriodId(period.id)
+                                                            setTela('detalhePeriodo')
+                                                        }}
+                                                    >
+                                                        Detalhes
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        onClick={() => {
+                                                            setPeriodToEdit(period)
+                                                            setPeriodName(period.name)
+                                                            setTela('formularioPeriodo')
+                                                        }}
+                                                    >
+                                                        Editar
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        onClick={() => copyPeriod(period.id, `${period.name} (Cópia)`)}
+                                                    >
+                                                        Copiar
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        onClick={() => setPeriodToRemove(period)}
+                                                    >
+                                                        Remover
+                                                    </Button>
+                                                </div>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </div>
                         </>
                     )}
                 </div>
