@@ -1,18 +1,22 @@
 import { useMemo, useState } from 'react'
 
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
+import ConfirmDialog from './ui/confirm-dialog'
+import EmptyState from './EmptyState'
 import { formatCurrency, maskCurrency, parseUserValue } from '../utils/formatters'
 import useBusiness from '../hooks/useBusiness'
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import PeriodCharts from './PeriodCharts'
+import PeriodSummary from './PeriodSummary'
+import { PiggyBank, TrendingUp, TrendingDown } from 'lucide-react'
 
 function BusinessModule() {
     const {
         periods,
         addPeriod,
+        copyPeriod,
         updatePeriod,
         removePeriod,
         addIncome,
@@ -74,6 +78,20 @@ function BusinessModule() {
         <div>
             {tela === 'listaPeriodos' && (
                 <div className="space-y-4">
+                    {periods.length === 0 ? (
+                        <EmptyState
+                            icon={PiggyBank}
+                            title="Nenhum período cadastrado"
+                            description="Crie seu primeiro período para acompanhar receitas e despesas."
+                            actionLabel="Adicionar Período"
+                            onAction={() => {
+                                setPeriodToEdit(null)
+                                setPeriodName('')
+                                setTela('formularioPeriodo')
+                            }}
+                        />
+                    ) : (
+                        <>
                     <div className="flex flex-wrap gap-2">
                         <Button onClick={() => {
                             setPeriodToEdit(null)
@@ -84,46 +102,7 @@ function BusinessModule() {
                         </Button>
                     </div>
 
-                    {chartData.length > 0 && (
-                        <div className="space-y-4">
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Receitas vs Despesas por período</CardTitle>
-                                </CardHeader>
-                                <CardContent className="h-80">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <BarChart data={chartData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="name" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Bar dataKey="income" name="Receitas" fill="#22c55e" />
-                                            <Bar dataKey="expense" name="Despesas" fill="#ef4444" />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </CardContent>
-                            </Card>
-
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle>Evolução do resultado</CardTitle>
-                                </CardHeader>
-                                <CardContent className="h-72">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={chartData}>
-                                            <CartesianGrid strokeDasharray="3 3" />
-                                            <XAxis dataKey="name" />
-                                            <YAxis />
-                                            <Tooltip />
-                                            <Legend />
-                                            <Line type="linear" dataKey="result" name="Resultado" stroke="#2563eb" strokeWidth={2} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    )}
+                    <PeriodCharts chartData={chartData} />
 
                     <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                         {periods.map(period => {
@@ -172,6 +151,12 @@ function BusinessModule() {
                                                 Editar
                                             </Button>
                                             <Button
+                                                variant="secondary"
+                                                onClick={() => copyPeriod(period.id, `${period.name} (Cópia)`)}
+                                            >
+                                                Copiar
+                                            </Button>
+                                            <Button
                                                 variant="destructive"
                                                 onClick={() => setPeriodToRemove(period)}
                                             >
@@ -183,6 +168,8 @@ function BusinessModule() {
                             )
                         })}
                     </div>
+                        </>
+                    )}
                 </div>
             )}
 
@@ -281,54 +268,7 @@ function BusinessModule() {
                         </div>
                     </div>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Resumo do período</CardTitle>
-                        </CardHeader>
-                        <CardContent className="grid gap-6 md:grid-cols-2">
-                            <div className="space-y-3">
-                                <div>
-                                    <div className="text-sm text-muted-foreground">Receitas</div>
-                                    <div className="text-lg font-semibold">{formatCurrency(totals.income)}</div>
-                                </div>
-                                <div>
-                                    <div className="text-sm text-muted-foreground">Despesas</div>
-                                    <div className="text-lg font-semibold">{formatCurrency(totals.expense)}</div>
-                                </div>
-                                <div>
-                                    <div className="text-sm text-muted-foreground">Resultado</div>
-                                    <div className="text-lg font-semibold">{formatCurrency(totals.result)}</div>
-                                </div>
-                                <div>
-                                    <div className="text-sm text-muted-foreground">Margem</div>
-                                    <div className="text-lg font-semibold">{totals.margin.toFixed(1)}%</div>
-                                </div>
-                            </div>
-
-                            <div className="h-64">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <PieChart>
-                                        <Pie
-                                            data={[
-                                                { name: 'Receitas', value: totals.income },
-                                                { name: 'Despesas', value: totals.expense }
-                                            ]}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            innerRadius={50}
-                                            outerRadius={80}
-                                            paddingAngle={4}
-                                        >
-                                            <Cell fill="#22c55e" />
-                                            <Cell fill="#ef4444" />
-                                        </Pie>
-                                        <Tooltip />
-                                        <Legend />
-                                    </PieChart>
-                                </ResponsiveContainer>
-                            </div>
-                        </CardContent>
-                    </Card>
+                    <PeriodSummary totals={totals} />
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <Card>
@@ -336,10 +276,20 @@ function BusinessModule() {
                                 <CardTitle>Receitas</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {selectedPeriod.incomes.length === 0 && (
-                                    <p className="text-sm text-muted-foreground">Nenhuma receita registrada.</p>
-                                )}
-                                {selectedPeriod.incomes.map((income) => (
+                                {selectedPeriod.incomes.length === 0 ? (
+                                    <EmptyState
+                                        icon={TrendingUp}
+                                        title="Nenhuma receita registrada"
+                                        description="Adicione receitas para acompanhar o desempenho do período."
+                                        actionLabel="Adicionar Receita"
+                                        onAction={() => {
+                                            setIncomeToEdit(null)
+                                            setIncomeDescription('')
+                                            setIncomeValue('')
+                                            setTela('formularioReceita')
+                                        }}
+                                    />
+                                ) : selectedPeriod.incomes.map((income) => (
                                     <div key={income.id} className="flex items-center justify-between gap-3">
                                         <div>
                                             <div className="font-medium">{income.description}</div>
@@ -376,10 +326,20 @@ function BusinessModule() {
                                 <CardTitle>Despesas</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3">
-                                {selectedPeriod.expenses.length === 0 && (
-                                    <p className="text-sm text-muted-foreground">Nenhuma despesa registrada.</p>
-                                )}
-                                {selectedPeriod.expenses.map((expense) => (
+                                {selectedPeriod.expenses.length === 0 ? (
+                                    <EmptyState
+                                        icon={TrendingDown}
+                                        title="Nenhuma despesa registrada"
+                                        description="Adicione despesas para manter o controle do período."
+                                        actionLabel="Adicionar Despesa"
+                                        onAction={() => {
+                                            setExpenseToEdit(null)
+                                            setExpenseDescription('')
+                                            setExpenseValue('')
+                                            setTela('formularioDespesa')
+                                        }}
+                                    />
+                                ) : selectedPeriod.expenses.map((expense) => (
                                     <div key={expense.id} className="flex items-center justify-between gap-3">
                                         <div>
                                             <div className="font-medium">{expense.description}</div>
@@ -569,67 +529,46 @@ function BusinessModule() {
             )}
 
             {periodToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover período</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{periodToRemove.name}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setPeriodToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                removePeriod(periodToRemove.id)
-                                if (selectedPeriodId === periodToRemove.id) {
-                                    setSelectedPeriodId(null)
-                                    setTela('listaPeriodos')
-                                }
-                                setPeriodToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover período"
+                    description={`Tem certeza que deseja remover "${periodToRemove.name}"?`}
+                    onCancel={() => setPeriodToRemove(null)}
+                    onConfirm={() => {
+                        removePeriod(periodToRemove.id)
+                        if (selectedPeriodId === periodToRemove.id) {
+                            setSelectedPeriodId(null)
+                            setTela('listaPeriodos')
+                        }
+                        setPeriodToRemove(null)
+                    }}
+                />
             )}
 
             {incomeToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover receita</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{incomeToRemove.income.description}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setIncomeToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                removeIncome(incomeToRemove.periodId, incomeToRemove.income.id)
-                                setIncomeToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover receita"
+                    description={`Tem certeza que deseja remover "${incomeToRemove.income.description}"?`}
+                    onCancel={() => setIncomeToRemove(null)}
+                    onConfirm={() => {
+                        removeIncome(incomeToRemove.periodId, incomeToRemove.income.id)
+                        setIncomeToRemove(null)
+                    }}
+                />
             )}
 
             {expenseToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover despesa</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{expenseToRemove.expense.description}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setExpenseToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                removeExpense(expenseToRemove.periodId, expenseToRemove.expense.id)
-                                setExpenseToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover despesa"
+                    description={`Tem certeza que deseja remover "${expenseToRemove.expense.description}"?`}
+                    onCancel={() => setExpenseToRemove(null)}
+                    onConfirm={() => {
+                        removeExpense(expenseToRemove.periodId, expenseToRemove.expense.id)
+                        setExpenseToRemove(null)
+                    }}
+                />
             )}
         </div>
     )

@@ -7,9 +7,9 @@ import ExpenseForm from './ExpenseForm'
 import ExpenseList from './ExpenseList'
 
 import { Alert, AlertDescription } from './ui/alert'
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './ui/alert-dialog'
 import { Button } from './ui/button'
 import { CardContent } from './ui/card'
+import ConfirmDialog from './ui/confirm-dialog'
 import useBudgets from '../hooks/useBudgets'
 import useCategories from '../hooks/useCategories'
 import useExpenses from '../hooks/useExpenses'
@@ -255,64 +255,43 @@ function BudgetModule() {
             )}
 
             {budgetToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover orçamento</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{budgetToRemove.name}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setBudgetToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                setBudgets(budgets.filter((_, i) => i !== budgetToRemove.index))
-                                setBudgetToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover orçamento"
+                    description={`Tem certeza que deseja remover "${budgetToRemove.name}"?`}
+                    onCancel={() => setBudgetToRemove(null)}
+                    onConfirm={() => {
+                        setBudgets(budgets.filter((_, i) => i !== budgetToRemove.index))
+                        setBudgetToRemove(null)
+                    }}
+                />
             )}
 
             {expenseToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover despesa</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{expenseToRemove.description}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setExpenseToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                const budgetAtualizado = deleteExpense(selectedBudgetIndex, expenseToRemove.categoryIndex, expenseToRemove.expenseIndex)
-                                setSelectedBudget(budgetAtualizado)
-                                setExpenseToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover despesa"
+                    description={`Tem certeza que deseja remover "${expenseToRemove.description}"?`}
+                    onCancel={() => setExpenseToRemove(null)}
+                    onConfirm={() => {
+                        const budgetAtualizado = deleteExpense(selectedBudgetIndex, expenseToRemove.categoryIndex, expenseToRemove.expenseIndex)
+                        setSelectedBudget(budgetAtualizado)
+                        setExpenseToRemove(null)
+                    }}
+                />
             )}
 
             {categoryToRemove && (
-                <AlertDialog open={true}>
-                    <AlertDialogContent>
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>Remover categoria</AlertDialogTitle>
-                            <AlertDialogDescription>
-                                Tem certeza que deseja remover "{categoryToRemove.name}"?
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel onClick={() => setCategoryToRemove(null)}>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => {
-                                removeCategory(categoryToRemove.id)
-                                setCategoryToRemove(null)
-                            }}>Remover</AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <ConfirmDialog
+                    open={true}
+                    title="Remover categoria"
+                    description={`Tem certeza que deseja remover "${categoryToRemove.name}"?`}
+                    onCancel={() => setCategoryToRemove(null)}
+                    onConfirm={() => {
+                        removeCategory(categoryToRemove.id)
+                        setCategoryToRemove(null)
+                    }}
+                />
             )}
         </div>
     )

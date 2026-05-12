@@ -20,6 +20,21 @@ function useBusiness() {
         setPeriods([...periods, newPeriod])
     }
 
+    function copyPeriod(periodId, newName) {
+        const original = periods.find(period => period.id === periodId)
+        if (!original) return
+
+        const copia = {
+            ...original,
+            id: crypto.randomUUID(),
+            name: newName,
+            incomes: original.incomes.map(income => ({ ...income })),
+            expenses: original.expenses.map(expense => ({ ...expense }))
+        }
+
+        setPeriods([...periods, copia])
+    }
+
     function updatePeriod(periodId, updatedPeriod) {
         setPeriods(periods.map(period =>
             period.id === periodId
@@ -108,6 +123,7 @@ function useBusiness() {
         periods,
         setPeriods,
         addPeriod,
+        copyPeriod,
         updatePeriod,
         removePeriod,
         addIncome,
