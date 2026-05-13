@@ -106,7 +106,7 @@ function BusinessModule() {
 
                             <PeriodCharts chartData={chartData} />
 
-                                <PeriodList
+                            <PeriodList
                                 periods={periods}
                                 onSelect={(periodId) => {
                                     setSelectedPeriodId(periodId)
