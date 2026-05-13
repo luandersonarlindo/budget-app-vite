@@ -27,9 +27,9 @@ function useBusiness() {
         const copia = {
             ...original,
             id: crypto.randomUUID(),
-            name: newName,
-            incomes: original.incomes.map(income => ({ ...income })),
-            expenses: original.expenses.map(expense => ({ ...expense }))
+            name: newName || `${original.name} (cópia)`,
+            incomes: original.incomes.map(income => ({ ...income, id: crypto.randomUUID() })),
+            expenses: original.expenses.map(expense => ({ ...expense, id: crypto.randomUUID() }))
         }
 
         setPeriods([...periods, copia])

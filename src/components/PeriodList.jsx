@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { formatCurrency } from '../utils/formatters'
 
-function PeriodList({ periods, onSelect, onEdit, onRemove }) {
+function PeriodList({ periods, onSelect, onEdit, onRemove, onCopy }) {
     return (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {periods.map((period) => {
@@ -36,6 +36,9 @@ function PeriodList({ periods, onSelect, onEdit, onRemove }) {
                                 </Button>
                                 <Button variant="secondary" onClick={() => onEdit(period)}>
                                     Editar
+                                </Button>
+                                <Button variant="ghost" onClick={() => onCopy && onCopy(period)}>
+                                    Copiar
                                 </Button>
                                 <Button variant="destructive" onClick={() => onRemove(period)}>
                                     Remover

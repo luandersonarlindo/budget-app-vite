@@ -6,7 +6,11 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import ConfirmDialog from './ui/confirm-dialog'
 import EmptyState from './EmptyState'
-import { formatCurrency, maskCurrency, parseUserValue } from '../utils/formatters'
+import { formatCurrency } from '../utils/formatters'
+import PeriodForm from './forms/PeriodForm'
+import IncomeForm from './forms/IncomeForm'
+import ExpenseFormBusiness from './forms/ExpenseFormBusiness'
+import CopyDialog from './ui/copy-dialog'
 import useBusiness from '../hooks/useBusiness'
 import IncomeList from './IncomeList'
 import ExpenseListBusiness from './ExpenseListBusiness'
@@ -40,12 +44,9 @@ function BusinessModule() {
     const [periodToRemove, setPeriodToRemove] = useState(null)
     const [incomeToRemove, setIncomeToRemove] = useState(null)
     const [expenseToRemove, setExpenseToRemove] = useState(null)
+    const [copyTarget, setCopyTarget] = useState(null)
 
-    const [periodName, setPeriodName] = useState('')
-    const [incomeDescription, setIncomeDescription] = useState('')
-    const [incomeValue, setIncomeValue] = useState('')
-    const [expenseDescription, setExpenseDescription] = useState('')
-    const [expenseValue, setExpenseValue] = useState('')
+
 
     const selectedPeriod = useMemo(() => {
         return periods.find(period => period.id === selectedPeriodId) || null
@@ -89,7 +90,6 @@ function BusinessModule() {
                             actionLabel="Adicionar Período"
                             onAction={() => {
                                 setPeriodToEdit(null)
-                                setPeriodName('')
                                 setTela('formularioPeriodo')
                             }}
                         />
@@ -98,7 +98,6 @@ function BusinessModule() {
                             <div className="flex flex-wrap gap-2">
                                 <Button onClick={() => {
                                     setPeriodToEdit(null)
-                                    setPeriodName('')
                                     setTela('formularioPeriodo')
                                 }}>
                                     Adicionar Período
@@ -107,7 +106,7 @@ function BusinessModule() {
 
                             <PeriodCharts chartData={chartData} />
 
-                            <PeriodList
+                                <PeriodList
                                 periods={periods}
                                 onSelect={(periodId) => {
                                     setSelectedPeriodId(periodId)
@@ -115,10 +114,13 @@ function BusinessModule() {
                                 }}
                                 onEdit={(period) => {
                                     setPeriodToEdit(period)
-                                    setPeriodName(period.name)
+
                                     setTela('formularioPeriodo')
                                 }}
                                 onRemove={(period) => setPeriodToRemove(period)}
+                                onCopy={(period) => {
+                                    setCopyTarget(period)
+                                }}
                             />
                         </>
                     )}
@@ -126,61 +128,19 @@ function BusinessModule() {
             )}
 
             {tela === 'formularioPeriodo' && (
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>{periodToEdit ? 'Editar Período' : 'Novo Período'}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {!periodToEdit && (
-                            <div className="px-1">
-                                <p className="text-sm font-medium mb-2">Como cadastrar um período:</p>
-                                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                                    <li>Informe um nome identificador, como "Maio-2026"</li>
-                                    <li>Depois registre receitas e despesas dentro do período</li>
-                                    <li>Resultado e margem são calculados automaticamente</li>
-                                </ol>
-                            </div>
-                        )}
-                        <div>
-                            <Label className="mb-2" htmlFor="periodName">Nome do período</Label>
-                            <Input
-                                id="periodName"
-                                type="text"
-                                value={periodName}
-                                onChange={(event) => setPeriodName(event.target.value)}
-                                placeholder="Ex: Maio 2026"
-                            />
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button
-                                onClick={() => {
-                                    if (!periodName.trim()) return
-                                    if (periodToEdit) {
-                                        updatePeriod(periodToEdit.id, { name: periodName.trim() })
-                                    } else {
-                                        addPeriod(periodName.trim())
-                                    }
-                                    setPeriodToEdit(null)
-                                    setPeriodName('')
-                                    setTela('listaPeriodos')
-                                }}
-                            >
-                                Salvar
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                onClick={() => {
-                                    setPeriodToEdit(null)
-                                    setPeriodName('')
-                                    setTela('listaPeriodos')
-                                }}
-                            >
-                                Cancelar
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                <PeriodForm
+                    period={periodToEdit}
+                    onSave={(name) => {
+                        if (periodToEdit) updatePeriod(periodToEdit.id, { name })
+                        else addPeriod(name)
+                        setPeriodToEdit(null)
+                        setTela('listaPeriodos')
+                    }}
+                    onCancel={() => {
+                        setPeriodToEdit(null)
+                        setTela('listaPeriodos')
+                    }}
+                />
             )}
 
             {tela === 'detalhePeriodo' && selectedPeriod && (
@@ -193,8 +153,6 @@ function BusinessModule() {
                             <Button
                                 onClick={() => {
                                     setIncomeToEdit(null)
-                                    setIncomeDescription('')
-                                    setIncomeValue('')
                                     setTela('formularioReceita')
                                 }}
                             >
@@ -204,8 +162,6 @@ function BusinessModule() {
                                 variant="secondary"
                                 onClick={() => {
                                     setExpenseToEdit(null)
-                                    setExpenseDescription('')
-                                    setExpenseValue('')
                                     setTela('formularioDespesa')
                                 }}
                             >
@@ -232,14 +188,10 @@ function BusinessModule() {
                                     incomes={selectedPeriod.incomes}
                                     onAddNew={() => {
                                         setIncomeToEdit(null)
-                                        setIncomeDescription('')
-                                        setIncomeValue('')
                                         setTela('formularioReceita')
                                     }}
                                     onEdit={(income) => {
                                         setIncomeToEdit(income)
-                                        setIncomeDescription(income.description)
-                                        setIncomeValue(String(income.value ?? ''))
                                         setTela('formularioReceita')
                                     }}
                                     onRemove={(income) => setIncomeToRemove({ periodId: selectedPeriod.id, income })}
@@ -256,14 +208,10 @@ function BusinessModule() {
                                     expenses={selectedPeriod.expenses}
                                     onAddNew={() => {
                                         setExpenseToEdit(null)
-                                        setExpenseDescription('')
-                                        setExpenseValue('')
                                         setTela('formularioDespesa')
                                     }}
                                     onEdit={(expense) => {
                                         setExpenseToEdit(expense)
-                                        setExpenseDescription(expense.description)
-                                        setExpenseValue(String(expense.value ?? ''))
                                         setTela('formularioDespesa')
                                     }}
                                     onRemove={(expense) => setExpenseToRemove({ periodId: selectedPeriod.id, expense })}
@@ -275,157 +223,35 @@ function BusinessModule() {
             )}
 
             {tela === 'formularioReceita' && selectedPeriod && (
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>{incomeToEdit ? 'Editar Receita' : 'Nova Receita'}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {!incomeToEdit && (
-                            <div className="px-1">
-                                <p className="text-sm font-medium mb-2">Como cadastrar uma receita:</p>
-                                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                                    <li>Descreva a origem da receita, como "Venda X"</li>
-                                    <li>Informe o valor recebido no período</li>
-                                    <li>O resultado do período será atualizado automaticamente</li>
-                                </ol>
-                            </div>
-                        )}
-                        <div>
-                            <Label className="mb-2" htmlFor="incomeDescription">Descrição</Label>
-                            <Input
-                                id="incomeDescription"
-                                type="text"
-                                value={incomeDescription}
-                                onChange={(event) => setIncomeDescription(event.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label className="mb-2" htmlFor="incomeValue">Valor</Label>
-                            <Input
-                                id="incomeValue"
-                                type="text"
-                                inputMode="numeric"
-                                value={incomeValue}
-                                placeholder="0,00"
-                                onChange={(event) => setIncomeValue(maskCurrency(event.target.value))}
-                            />
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button
-                                onClick={() => {
-                                    const value = parseUserValue(incomeValue)
-                                    if (!incomeDescription.trim()) return
-                                    if (incomeToEdit) {
-                                        updateIncome(selectedPeriod.id, incomeToEdit.id, {
-                                            description: incomeDescription.trim(),
-                                            value: Number.isNaN(value) ? 0 : value
-                                        })
-                                    } else {
-                                        addIncome(selectedPeriod.id, {
-                                            description: incomeDescription.trim(),
-                                            value: Number.isNaN(value) ? 0 : value
-                                        })
-                                    }
-                                    setIncomeToEdit(null)
-                                    setIncomeDescription('')
-                                    setIncomeValue('')
-                                    setTela('detalhePeriodo')
-                                }}
-                            >
-                                Salvar
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                onClick={() => {
-                                    setIncomeToEdit(null)
-                                    setIncomeDescription('')
-                                    setIncomeValue('')
-                                    setTela('detalhePeriodo')
-                                }}
-                            >
-                                Cancelar
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                <IncomeForm
+                    income={incomeToEdit}
+                    onSave={({ description, value }) => {
+                        if (incomeToEdit) updateIncome(selectedPeriod.id, incomeToEdit.id, { description, value })
+                        else addIncome(selectedPeriod.id, { description, value })
+                        setIncomeToEdit(null)
+                        setTela('detalhePeriodo')
+                    }}
+                    onCancel={() => {
+                        setIncomeToEdit(null)
+                        setTela('detalhePeriodo')
+                    }}
+                />
             )}
 
             {tela === 'formularioDespesa' && selectedPeriod && (
-                <Card className="max-w-xl">
-                    <CardHeader>
-                        <CardTitle>{expenseToEdit ? 'Editar Despesa' : 'Nova Despesa'}</CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        {!expenseToEdit && (
-                            <div className="px-1">
-                                <p className="text-sm font-medium mb-2">Como cadastrar uma despesa:</p>
-                                <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                                    <li>Descreva o custo, como "Fornecedor Y"</li>
-                                    <li>Informe o valor gasto no período</li>
-                                    <li>O resultado do período será atualizado automaticamente</li>
-                                </ol>
-                            </div>
-                        )}
-                        <div>
-                            <Label className="mb-2" htmlFor="expenseDescription">Descrição</Label>
-                            <Input
-                                id="expenseDescription"
-                                type="text"
-                                value={expenseDescription}
-                                onChange={(event) => setExpenseDescription(event.target.value)}
-                            />
-                        </div>
-                        <div>
-                            <Label className="mb-2" htmlFor="expenseValue">Valor</Label>
-                            <Input
-                                id="expenseValue"
-                                type="text"
-                                inputMode="numeric"
-                                value={expenseValue}
-                                placeholder="0,00"
-                                onChange={(event) => setExpenseValue(maskCurrency(event.target.value))}
-                            />
-                        </div>
-
-                        <div className="flex gap-2">
-                            <Button
-                                onClick={() => {
-                                    const value = parseUserValue(expenseValue)
-                                    if (!expenseDescription.trim()) return
-                                    if (expenseToEdit) {
-                                        updateExpense(selectedPeriod.id, expenseToEdit.id, {
-                                            description: expenseDescription.trim(),
-                                            value: Number.isNaN(value) ? 0 : value
-                                        })
-                                    } else {
-                                        addExpense(selectedPeriod.id, {
-                                            description: expenseDescription.trim(),
-                                            value: Number.isNaN(value) ? 0 : value
-                                        })
-                                    }
-                                    setExpenseToEdit(null)
-                                    setExpenseDescription('')
-                                    setExpenseValue('')
-                                    setTela('detalhePeriodo')
-                                }}
-                            >
-                                Salvar
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                onClick={() => {
-                                    setExpenseToEdit(null)
-                                    setExpenseDescription('')
-                                    setExpenseValue('')
-                                    setTela('detalhePeriodo')
-                                }}
-                            >
-                                Cancelar
-                            </Button>
-                        </div>
-                    </CardContent>
-                </Card>
+                <ExpenseFormBusiness
+                    expense={expenseToEdit}
+                    onSave={({ description, value }) => {
+                        if (expenseToEdit) updateExpense(selectedPeriod.id, expenseToEdit.id, { description, value })
+                        else addExpense(selectedPeriod.id, { description, value })
+                        setExpenseToEdit(null)
+                        setTela('detalhePeriodo')
+                    }}
+                    onCancel={() => {
+                        setExpenseToEdit(null)
+                        setTela('detalhePeriodo')
+                    }}
+                />
             )}
 
             {periodToRemove && (
@@ -441,6 +267,22 @@ function BusinessModule() {
                             setTela('listaPeriodos')
                         }
                         setPeriodToRemove(null)
+                    }}
+                />
+            )}
+
+            {copyTarget && (
+                <CopyDialog
+                    open={true}
+                    initialName={`${copyTarget.name} (cópia)`}
+                    onCancel={() => setCopyTarget(null)}
+                    onConfirm={(name) => {
+                        if (name && name.trim()) {
+                            copyPeriod(copyTarget.id, name.trim())
+                        } else {
+                            copyPeriod(copyTarget.id)
+                        }
+                        setCopyTarget(null)
                     }}
                 />
             )}
