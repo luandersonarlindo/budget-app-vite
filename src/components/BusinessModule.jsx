@@ -8,9 +8,12 @@ import ConfirmDialog from './ui/confirm-dialog'
 import EmptyState from './EmptyState'
 import { formatCurrency, maskCurrency, parseUserValue } from '../utils/formatters'
 import useBusiness from '../hooks/useBusiness'
+import IncomeList from './IncomeList'
+import ExpenseListBusiness from './ExpenseListBusiness'
 import PeriodCharts from './PeriodCharts'
+import PeriodList from './PeriodList'
 import PeriodSummary from './PeriodSummary'
-import { PiggyBank, TrendingUp, TrendingDown } from 'lucide-react'
+import { PiggyBank } from 'lucide-react'
 
 function BusinessModule() {
     const {
@@ -104,70 +107,19 @@ function BusinessModule() {
 
                             <PeriodCharts chartData={chartData} />
 
-                            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                                {periods.map(period => {
-                                    const totalIncome = period.incomes.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
-                                    const totalExpense = period.expenses.reduce((sum, item) => sum + (Number(item.value) || 0), 0)
-                                    const result = totalIncome - totalExpense
-                                    const margin = totalIncome > 0 ? (result / totalIncome) * 100 : 0
-
-                                    return (
-                                        <Card key={period.id}>
-                                            <CardHeader>
-                                                <CardTitle>{period.name}</CardTitle>
-                                            </CardHeader>
-                                            <CardContent className="space-y-2">
-                                                <div className="text-sm text-muted-foreground">
-                                                    Receitas: {formatCurrency(totalIncome)}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Despesas: {formatCurrency(totalExpense)}
-                                                </div>
-                                                <div className="text-sm font-medium">
-                                                    Resultado: {formatCurrency(result)}
-                                                </div>
-                                                <div className="text-sm text-muted-foreground">
-                                                    Margem: {margin.toFixed(1)}%
-                                                </div>
-
-                                                <div className="flex flex-wrap gap-2 pt-2">
-                                                    <Button
-                                                        variant="default"
-                                                        onClick={() => {
-                                                            setSelectedPeriodId(period.id)
-                                                            setTela('detalhePeriodo')
-                                                        }}
-                                                    >
-                                                        Detalhes
-                                                    </Button>
-                                                    <Button
-                                                        variant="secondary"
-                                                        onClick={() => {
-                                                            setPeriodToEdit(period)
-                                                            setPeriodName(period.name)
-                                                            setTela('formularioPeriodo')
-                                                        }}
-                                                    >
-                                                        Editar
-                                                    </Button>
-                                                    <Button
-                                                        variant="secondary"
-                                                        onClick={() => copyPeriod(period.id, `${period.name} (Cópia)`)}
-                                                    >
-                                                        Copiar
-                                                    </Button>
-                                                    <Button
-                                                        variant="destructive"
-                                                        onClick={() => setPeriodToRemove(period)}
-                                                    >
-                                                        Remover
-                                                    </Button>
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                })}
-                            </div>
+                            <PeriodList
+                                periods={periods}
+                                onSelect={(periodId) => {
+                                    setSelectedPeriodId(periodId)
+                                    setTela('detalhePeriodo')
+                                }}
+                                onEdit={(period) => {
+                                    setPeriodToEdit(period)
+                                    setPeriodName(period.name)
+                                    setTela('formularioPeriodo')
+                                }}
+                                onRemove={(period) => setPeriodToRemove(period)}
+                            />
                         </>
                     )}
                 </div>
@@ -275,49 +227,23 @@ function BusinessModule() {
                             <CardHeader>
                                 <CardTitle>Receitas</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                {selectedPeriod.incomes.length === 0 ? (
-                                    <EmptyState
-                                        icon={TrendingUp}
-                                        title="Nenhuma receita registrada"
-                                        description="Adicione receitas para acompanhar o desempenho do período."
-                                        actionLabel="Adicionar Receita"
-                                        onAction={() => {
-                                            setIncomeToEdit(null)
-                                            setIncomeDescription('')
-                                            setIncomeValue('')
-                                            setTela('formularioReceita')
-                                        }}
-                                    />
-                                ) : selectedPeriod.incomes.map((income) => (
-                                    <div key={income.id} className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <div className="font-medium">{income.description}</div>
-                                            <div className="text-sm text-muted-foreground">{formatCurrency(Number(income.value) || 0)}</div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                onClick={() => {
-                                                    setIncomeToEdit(income)
-                                                    setIncomeDescription(income.description)
-                                                    setIncomeValue(String(income.value ?? ''))
-                                                    setTela('formularioReceita')
-                                                }}
-                                            >
-                                                Editar
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                onClick={() => setIncomeToRemove({ periodId: selectedPeriod.id, income })}
-                                            >
-                                                Remover
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
+                            <CardContent>
+                                <IncomeList
+                                    incomes={selectedPeriod.incomes}
+                                    onAddNew={() => {
+                                        setIncomeToEdit(null)
+                                        setIncomeDescription('')
+                                        setIncomeValue('')
+                                        setTela('formularioReceita')
+                                    }}
+                                    onEdit={(income) => {
+                                        setIncomeToEdit(income)
+                                        setIncomeDescription(income.description)
+                                        setIncomeValue(String(income.value ?? ''))
+                                        setTela('formularioReceita')
+                                    }}
+                                    onRemove={(income) => setIncomeToRemove({ periodId: selectedPeriod.id, income })}
+                                />
                             </CardContent>
                         </Card>
 
@@ -325,49 +251,23 @@ function BusinessModule() {
                             <CardHeader>
                                 <CardTitle>Despesas</CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-3">
-                                {selectedPeriod.expenses.length === 0 ? (
-                                    <EmptyState
-                                        icon={TrendingDown}
-                                        title="Nenhuma despesa registrada"
-                                        description="Adicione despesas para manter o controle do período."
-                                        actionLabel="Adicionar Despesa"
-                                        onAction={() => {
-                                            setExpenseToEdit(null)
-                                            setExpenseDescription('')
-                                            setExpenseValue('')
-                                            setTela('formularioDespesa')
-                                        }}
-                                    />
-                                ) : selectedPeriod.expenses.map((expense) => (
-                                    <div key={expense.id} className="flex items-center justify-between gap-3">
-                                        <div>
-                                            <div className="font-medium">{expense.description}</div>
-                                            <div className="text-sm text-muted-foreground">{formatCurrency(Number(expense.value) || 0)}</div>
-                                        </div>
-                                        <div className="flex gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="secondary"
-                                                onClick={() => {
-                                                    setExpenseToEdit(expense)
-                                                    setExpenseDescription(expense.description)
-                                                    setExpenseValue(String(expense.value ?? ''))
-                                                    setTela('formularioDespesa')
-                                                }}
-                                            >
-                                                Editar
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="destructive"
-                                                onClick={() => setExpenseToRemove({ periodId: selectedPeriod.id, expense })}
-                                            >
-                                                Remover
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
+                            <CardContent>
+                                <ExpenseListBusiness
+                                    expenses={selectedPeriod.expenses}
+                                    onAddNew={() => {
+                                        setExpenseToEdit(null)
+                                        setExpenseDescription('')
+                                        setExpenseValue('')
+                                        setTela('formularioDespesa')
+                                    }}
+                                    onEdit={(expense) => {
+                                        setExpenseToEdit(expense)
+                                        setExpenseDescription(expense.description)
+                                        setExpenseValue(String(expense.value ?? ''))
+                                        setTela('formularioDespesa')
+                                    }}
+                                    onRemove={(expense) => setExpenseToRemove({ periodId: selectedPeriod.id, expense })}
+                                />
                             </CardContent>
                         </Card>
                     </div>
