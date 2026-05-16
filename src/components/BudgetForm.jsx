@@ -45,12 +45,25 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
         }
 
         const novoOrcamento = {
+            id: budgetToEdit?.id || crypto.randomUUID(),
             name: nome,
             value: parseUserValue(valor),
             categories: personalizado
-                ? categorias.filter(cat => cat.selected)
+                ? categorias.filter(cat => cat.selected).map(cat => ({
+                    ...cat,
+                    expenses: (cat.expenses || []).map(exp => ({
+                        ...exp,
+                        id: exp.id || crypto.randomUUID()
+                    }))
+                }))
                 : (budgetToEdit
-                    ? budgetToEdit.categories
+                    ? budgetToEdit.categories.map(cat => ({
+                        ...cat,
+                        expenses: (cat.expenses || []).map(exp => ({
+                            ...exp,
+                            id: exp.id || crypto.randomUUID()
+                        }))
+                    }))
                     : availableCategories
                         .filter(cat => CATEGORIAS_PADRAO_IDS.includes(cat.id))
                         .map(cat => ({

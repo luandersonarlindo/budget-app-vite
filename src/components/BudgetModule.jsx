@@ -1,82 +1,83 @@
 import { useState } from 'react'
 import BudgetForm from './BudgetForm'
-import BudgetList from './BudgetList'
-import CategoryForm from './CategoryForm'
-import CategoryManager from './CategoryManager'
 import ExpenseForm from './ExpenseForm'
-import ExpenseList from './ExpenseList'
-
-import { Alert, AlertDescription } from './ui/alert'
-import { Button } from './ui/button'
-import { CardContent } from './ui/card'
+import CategoryForm from './CategoryForm'
 import ConfirmDialog from './ui/confirm-dialog'
+import CopyDialog from './ui/copy-dialog'
+import BudgetListView from './budget/BudgetListView'
+import BudgetDetailView from './budget/BudgetDetailView'
+import CategoryManagerView from './budget/CategoryManagerView'
 import useBudgets from '../hooks/useBudgets'
 import useCategories from '../hooks/useCategories'
-import useExpenses from '../hooks/useExpenses'
 
 function BudgetModule() {
-    const { budgets, setBudgets, copyBudget } = useBudgets()
-    const { addExpense, updateExpense, deleteExpense, moveExpense, moveAndUpdateExpense } = useExpenses(budgets, setBudgets)
+    const {
+        budgets,
+        addBudget,
+        updateBudget,
+        removeBudget,
+        copyBudget,
+        addExpense,
+        updateExpense,
+        removeExpense,
+        moveExpense,
+        moveAndUpdateExpense,
+        updateExpenseStatus
+    } = useBudgets()
+
+    const {
+        categories,
+        addCategory,
+        updateCategory,
+        removeCategory
+    } = useCategories()
 
     const [tela, setTela] = useState('lista')
+
     const [selectedBudget, setSelectedBudget] = useState(null)
-    const [selectedBudgetIndex, setSelectedBudgetIndex] = useState(null)
+    const [selectedBudgetId, setSelectedBudgetId] = useState(null)
     const [budgetToEdit, setBudgetToEdit] = useState(null)
+    const [editBudgetId, setEditBudgetId] = useState(null)
 
-    const [editIndex, setEditIndex] = useState(null)
     const [expenseToEdit, setExpenseToEdit] = useState(null)
-    const [editCategoryIndex, setEditCategoryIndex] = useState(null)
-    const [expenseEditIndex, setExpenseEditIndex] = useState(null)
+    const [editCategoryId, setEditCategoryId] = useState(null)
+    const [editExpenseId, setEditExpenseId] = useState(null)
 
-    const { categories, addCategory, updateCategory, removeCategory } = useCategories()
     const [categoryToEdit, setCategoryToEdit] = useState(null)
     const [categoryEditId, setCategoryEditId] = useState(null)
 
-    const [budgetError, setBudgetError] = useState(null)
     const [budgetToRemove, setBudgetToRemove] = useState(null)
-    const [expenseError, setExpenseError] = useState(null)
     const [expenseToRemove, setExpenseToRemove] = useState(null)
-    const [categoryError, setCategoryError] = useState(null)
     const [categoryToRemove, setCategoryToRemove] = useState(null)
+    const [copyTarget, setCopyTarget] = useState(null)
+
+    const [expenseError, setExpenseError] = useState(null)
+    const [categoryError, setCategoryError] = useState(null)
 
     return (
         <div>
-            {budgetError && (
-                <Alert variant="destructive" className="mb-4">
-                    <AlertDescription>{budgetError}</AlertDescription>
-                    <button onClick={() => setBudgetError(null)}>✕</button>
-                </Alert>
-            )}
-
             {tela === 'lista' && (
-                <div>
-                    <CardContent className="flex flex-wrap gap-2 p-0">
-                        <Button variant={'default'} className="mb-4" onClick={() => setTela('formulario')}>
-                            Adicionar Orçamento
-                        </Button>
-
-                        <Button variant={'secondary'} className="mb-4" onClick={() => setTela('categorias')}>
-                            Gerenciar Categorias
-                        </Button>
-                    </CardContent>
-
-                    <BudgetList budgets={budgets}
-                        onSelect={(budget, index) => {
-                            setSelectedBudget(budget)
-                            setSelectedBudgetIndex(index)
-                            setTela('despesas')
-                        }}
-                        onDelete={(index) => setBudgetToRemove({ ...budgets[index], index })}
-                        onEdit={(index) => {
-                            setBudgetToEdit(budgets[index])
-                            setEditIndex(index)
-                            setTela('formulario')
-                        }}
-                        onCopy={copyBudget}
-                        onAddNew={() => setTela('formulario')}
-                    />
-
-                </div>
+                <BudgetListView
+                    budgets={budgets}
+                    onNewBudget={() => setTela('formulario')}
+                    onManageCategories={() => setTela('categorias')}
+                    onSelectBudget={(budget) => {
+                        setSelectedBudget(budget)
+                        setSelectedBudgetId(budget.id)
+                        setTela('despesas')
+                    }}
+                    onDeleteBudget={(budgetId) => setBudgetToRemove(budgets.find((budget) => budget.id === budgetId) || null)}
+                    onEditBudget={(budgetId) => {
+                        const budget = budgets.find((item) => item.id === budgetId) || null
+                        setBudgetToEdit(budget)
+                        setEditBudgetId(budgetId)
+                        setTela('formulario')
+                    }}
+                    onCopyBudget={(budgetId) => {
+                        const budget = budgets.find((item) => item.id === budgetId) || null
+                        setCopyTarget(budget)
+                    }}
+                />
             )}
 
             {tela === 'formulario' && (
@@ -85,69 +86,50 @@ function BudgetModule() {
                     budgetToEdit={budgetToEdit}
                     onCancel={() => {
                         setBudgetToEdit(null)
-                        setEditIndex(null)
+                        setEditBudgetId(null)
                         setTela('lista')
                     }}
                     onSave={(newBudget) => {
-                        if (editIndex !== null) {
-                            setBudgets(budgets.map((b, i) => i === editIndex ? newBudget : b))
-                            setEditIndex(null)
-                            setBudgetToEdit(null)
+                        if (budgetToEdit) {
+                            updateBudget(editBudgetId, newBudget)
+                            if (selectedBudgetId === editBudgetId) {
+                                setSelectedBudget(newBudget)
+                            }
                         } else {
-                            setBudgets([...budgets, newBudget])
+                            addBudget(newBudget)
                         }
+                        setBudgetToEdit(null)
+                        setEditBudgetId(null)
                         setTela('lista')
                     }}
-
                 />
             )}
 
-            {tela === 'despesas' && (
-                <div>
-                    {expenseError && (
-                        <Alert variant="destructive" className="mb-4">
-                            <AlertDescription>{expenseError}</AlertDescription>
-                            <button onClick={() => setExpenseError(null)}>✕</button>
-                        </Alert>
-                    )}
-
-                    <h2 className="text-3xl font-bold text-black m-6 p-3 text-center">Despesas: {selectedBudget.name}</h2>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <Button variant={'default'} onClick={() => setTela('formularioDespesa')}>
-                            Adicionar Despesa
-                        </Button>
-
-                        <Button variant={'secondary'} onClick={() => setTela('lista')}>
-                            Voltar
-                        </Button>
-                    </div>
-
-                    <ExpenseList budget={selectedBudget}
-                        onDeleteExpense={(categoryIndex, expenseIndex) => {
-                            setExpenseToRemove({ categoryIndex, expenseIndex, description: selectedBudget.categories[categoryIndex].expenses[expenseIndex].description })
-                        }}
-                        onEditExpense={(categoryIndex, expenseIndex, expense) => {
-                            setExpenseToEdit({ ...expense, categoryIndex })
-                            setEditCategoryIndex(categoryIndex)
-                            setExpenseEditIndex(expenseIndex)
-                            setTela('formularioDespesa')
-                        }}
-                        onMoveExpense={(fromCat, expIndex, toCat) => {
-                            const budgetAtualizado = moveExpense(selectedBudgetIndex, fromCat, expIndex, toCat)
-                            setSelectedBudget(budgetAtualizado)
-                        }}
-                        onUpdateStatus={(catIndex, expIndex, status) => {
-                            const budgetAtualizado = updateExpense(
-                                selectedBudgetIndex,
-                                catIndex,
-                                expIndex,
-                                { ...selectedBudget.categories[catIndex].expenses[expIndex], status }
-                            )
-                            setSelectedBudget(budgetAtualizado)
-                        }}
-                        onAddNew={() => setTela('formularioDespesa')}
-                    />
-                </div>
+            {tela === 'despesas' && selectedBudget && (
+                <BudgetDetailView
+                    budget={selectedBudget}
+                    expenseError={expenseError}
+                    onBack={() => setTela('lista')}
+                    onAddExpense={() => setTela('formularioDespesa')}
+                    onEditExpense={(categoryId, expenseId, expense) => {
+                        setExpenseToEdit({ ...expense, categoryId })
+                        setEditCategoryId(categoryId)
+                        setEditExpenseId(expenseId)
+                        setTela('formularioDespesa')
+                    }}
+                    onDeleteExpense={(categoryId, expenseId, description) => {
+                        setExpenseToRemove({ categoryId, expenseId, description })
+                    }}
+                    onMoveExpense={(fromCategoryId, expenseId, toCategoryId) => {
+                        const updatedBudget = moveExpense(selectedBudgetId, fromCategoryId, expenseId, toCategoryId)
+                        if (updatedBudget) setSelectedBudget(updatedBudget)
+                    }}
+                    onUpdateStatus={(categoryId, expenseId, status) => {
+                        const updatedBudget = updateExpenseStatus(selectedBudgetId, categoryId, expenseId, status)
+                        if (updatedBudget) setSelectedBudget(updatedBudget)
+                    }}
+                    onClearError={() => setExpenseError(null)}
+                />
             )}
 
             {tela === 'formularioDespesa' && (
@@ -156,81 +138,65 @@ function BudgetModule() {
                     budget={selectedBudget}
                     onCancel={() => {
                         setExpenseToEdit(null)
-                        setEditCategoryIndex(null)
-                        setExpenseEditIndex(null)
+                        setEditCategoryId(null)
+                        setEditExpenseId(null)
                         setTela('despesas')
                     }}
-                    onSave={({ categoryIndex, expense }) => {
-                        let budgetAtualizado
-                        if (expenseEditIndex !== null) {
-                            if (categoryIndex !== editCategoryIndex) {
-                                budgetAtualizado = moveAndUpdateExpense(selectedBudgetIndex, editCategoryIndex, expenseEditIndex, categoryIndex, expense)
+                    onSave={({ categoryId, expense }) => {
+                        let updatedBudget
+                        if (expenseToEdit) {
+                            if (categoryId !== editCategoryId) {
+                                updatedBudget = moveAndUpdateExpense(
+                                    selectedBudgetId,
+                                    editCategoryId,
+                                    editExpenseId,
+                                    categoryId,
+                                    expense
+                                )
                             } else {
-                                budgetAtualizado = updateExpense(selectedBudgetIndex, editCategoryIndex, expenseEditIndex, expense)
+                                updatedBudget = updateExpense(selectedBudgetId, editCategoryId, editExpenseId, expense)
                             }
-                            setExpenseToEdit(null)
-                            setExpenseEditIndex(null)
-                            setEditCategoryIndex(null)
                         } else {
-                            budgetAtualizado = addExpense(selectedBudgetIndex, categoryIndex, expense)
+                            updatedBudget = addExpense(selectedBudgetId, categoryId, expense)
                         }
-                        setSelectedBudget(budgetAtualizado)
+
+                        if (updatedBudget) setSelectedBudget(updatedBudget)
+                        setExpenseToEdit(null)
+                        setEditCategoryId(null)
+                        setEditExpenseId(null)
                         setTela('despesas')
                     }}
                 />
             )}
 
             {tela === 'categorias' && (
-                <div>
-                    {categoryError && (
-                        <Alert variant="destructive" className="mb-4">
-                            <AlertDescription>{categoryError}</AlertDescription>
-                            <button onClick={() => setCategoryError(null)}>✕</button>
-                        </Alert>
-                    )}
+                <CategoryManagerView
+                    categories={categories}
+                    categoryError={categoryError}
+                    onBack={() => {
+                        setTela('lista')
+                        setCategoryToEdit(null)
+                        setCategoryEditId(null)
+                    }}
+                    onAddCategory={() => setTela('formularioCategoria')}
+                    onEditCategory={(category) => {
+                        setCategoryToEdit(category)
+                        setCategoryEditId(category.id)
+                        setTela('formularioCategoria')
+                    }}
+                    onDeleteCategory={(category) => {
+                        const emUso = budgets.some((budget) =>
+                            (budget.categories || []).some((budgetCategory) => budgetCategory.id === category.id)
+                        )
 
-                    <div className="flex flex-wrap gap-2 mb-4">
-                        <Button variant={'default'} onClick={() => setTela('formularioCategoria')}>
-                            Adicionar Categoria
-                        </Button>
-
-                        <Button variant={'secondary'} onClick={() => {
-                            setCategoryError(null)
-                            setTela('lista')
-                        }}>
-                            Voltar
-                        </Button>
-                    </div>
-
-                    <CategoryManager
-                        categories={categories}
-                        onSave={(newCategories) => {
-                            addCategory(newCategories)
-                            setTela('lista')
-                        }}
-                        onCancel={() => setTela('lista')}
-                        onAdd={() => {
-                            setCategoryEditId(null)
-                            setTela('formularioCategoria')
-                        }}
-                        onEdit={(category) => {
-                            setCategoryToEdit(category)
-                            setCategoryEditId(category.id)
-                            setTela('formularioCategoria')
-                        }}
-                        onRemove={(category) => {
-                            const emUso = budgets.some(b =>
-                                b.categories.some(c => c.id === category.id)
-                            )
-                            if (emUso) {
-                                setCategoryError(`A categoria "${category.name}" está em uso em um ou mais orçamentos e não pode ser removida.`)
-                            } else {
-                                setCategoryToRemove(category)
-                            }
-                        }}
-                        onAddNew={() => setTela('formularioCategoria')}
-                    />
-                </div>
+                        if (emUso) {
+                            setCategoryError(`A categoria "${category.name}" está em uso em um ou mais orçamentos e não pode ser removida.`)
+                        } else {
+                            setCategoryToRemove(category)
+                        }
+                    }}
+                    onClearError={() => setCategoryError(null)}
+                />
             )}
 
             {tela === 'formularioCategoria' && (
@@ -241,14 +207,14 @@ function BudgetModule() {
                         setCategoryEditId(null)
                         setTela('categorias')
                     }}
-                    onSave={(newCategories) => {
+                    onSave={(newCategory) => {
                         if (categoryEditId !== null) {
-                            updateCategory(categoryEditId, newCategories)
-                            setCategoryEditId(null)
-                            setCategoryToEdit(null)
+                            updateCategory(categoryEditId, newCategory)
                         } else {
-                            addCategory(newCategories)
+                            addCategory(newCategory)
                         }
+                        setCategoryToEdit(null)
+                        setCategoryEditId(null)
                         setTela('categorias')
                     }}
                 />
@@ -261,7 +227,12 @@ function BudgetModule() {
                     description={`Tem certeza que deseja remover "${budgetToRemove.name}"?`}
                     onCancel={() => setBudgetToRemove(null)}
                     onConfirm={() => {
-                        setBudgets(budgets.filter((_, i) => i !== budgetToRemove.index))
+                        removeBudget(budgetToRemove.id)
+                        if (selectedBudgetId === budgetToRemove.id) {
+                            setSelectedBudget(null)
+                            setSelectedBudgetId(null)
+                            setTela('lista')
+                        }
                         setBudgetToRemove(null)
                     }}
                 />
@@ -271,11 +242,15 @@ function BudgetModule() {
                 <ConfirmDialog
                     open={true}
                     title="Remover despesa"
-                    description={`Tem certeza que deseja remover "${expenseToRemove.description}"?`}
+                    description={`Tem certeza que deseja remover "${expenseToRemove.description || 'esta despesa'}"?`}
                     onCancel={() => setExpenseToRemove(null)}
                     onConfirm={() => {
-                        const budgetAtualizado = deleteExpense(selectedBudgetIndex, expenseToRemove.categoryIndex, expenseToRemove.expenseIndex)
-                        setSelectedBudget(budgetAtualizado)
+                        const updatedBudget = removeExpense(
+                            selectedBudgetId,
+                            expenseToRemove.categoryId,
+                            expenseToRemove.expenseId
+                        )
+                        if (updatedBudget) setSelectedBudget(updatedBudget)
                         setExpenseToRemove(null)
                     }}
                 />
@@ -290,6 +265,29 @@ function BudgetModule() {
                     onConfirm={() => {
                         removeCategory(categoryToRemove.id)
                         setCategoryToRemove(null)
+                    }}
+                />
+            )}
+
+            {copyTarget && (
+                <CopyDialog
+                    open={true}
+                    title="Copiar orçamento"
+                    description="Digite um novo nome para a cópia do orçamento"
+                    initialName={`${copyTarget.name} (cópia)`}
+                    initialValue={copyTarget.value ?? ''}
+                    showValueField={true}
+                    valueLabel="Valor do orçamento"
+                    valuePlaceholder="0,00"
+                    onCancel={() => setCopyTarget(null)}
+                    onConfirm={({ name, value }) => {
+                        const parsedValue = Number(value)
+                        copyBudget(
+                            copyTarget.id,
+                            name?.trim() ? name.trim() : `${copyTarget.name} (cópia)`,
+                            Number.isNaN(parsedValue) ? copyTarget.value : parsedValue
+                        )
+                        setCopyTarget(null)
                     }}
                 />
             )}

@@ -19,8 +19,8 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy, onAddNew }) {
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {budgets.map((budget, index) => (
-                <Card key={index} className="mb-4">
+            {budgets.map((budget) => (
+                <Card key={budget.id} className="mb-4">
                     <CardHeader>
                         <CardTitle>{budget.name}</CardTitle>
                     </CardHeader>
@@ -28,10 +28,10 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy, onAddNew }) {
                         <p>{formatCurrency(budget.value)}</p>
                     </CardContent>
                     <CardFooter className="flex flex-wrap gap-2">
-                        <Button onClick={() => onSelect(budget, index)}>Ver despesas</Button>
-                        <Button variant="outline" onClick={() => onEdit(index)}>Editar</Button>
-                        <Button variant="secondary" onClick={() => onCopy(index, `${budget.name} (Cópia)`, budget.value)}>Copiar</Button>
-                        <Button variant="destructive" onClick={() => onDelete(index)}>Deletar</Button>
+                        <Button onClick={() => onSelect(budget)}>Ver despesas</Button>
+                        <Button variant="outline" onClick={() => onEdit(budget.id)}>Editar</Button>
+                        <Button variant="secondary" onClick={() => onCopy(budget.id)}>Copiar</Button>
+                        <Button variant="destructive" onClick={() => onDelete(budget.id)}>Deletar</Button>
                     </CardFooter>
                 </Card>
             ))}

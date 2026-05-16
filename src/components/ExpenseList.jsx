@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, onUpdateStatus, onAddNew }) {
     return (
         <div>
-            {budget.categories.map((category, catIndex) => {
+            {budget.categories.map((category) => {
                 const limite = budget.value * category.percent / 100
                 const totalGasto = category.expenses.reduce((acc, exp) => acc + exp.value, 0)
 
@@ -21,7 +21,7 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                 const disponivel = limite - totalGasto
 
                 return (
-                    <Card key={catIndex} className="mb-6">
+                    <Card key={category.id} className="mb-6">
                         <CardHeader>
                             <CardTitle>{category.name} — {category.percent}%</CardTitle>
                             <CardDescription className="flex flex-wrap md:flex-nowrap lg:flex-nowrap max-w-full gap-4 mt-4">
@@ -56,19 +56,31 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                     actionLabel="Adicionar Despesa"
                                     onAction={onAddNew}
                                 />
-                            ) : (category.expenses.map((expense, expIndex) => (
-                                <Card key={expIndex}>
+                            ) : (category.expenses.map((expense) => (
+                                <Card key={expense.id}>
                                     <CardHeader>
                                         <CardTitle>{expense.description}</CardTitle>
                                         <CardDescription>{formatCurrency(expense.value)}</CardDescription>
                                     </CardHeader>
                                     <CardContent className="flex flex-wrap gap-2">
-                                        <Button variant={'destructive'} className="flex gap-2 items-center" onClick={() => onDeleteExpense(catIndex, expIndex)}>Deletar</Button>
-                                        <Button variant={'outline'} className="flex gap-2 items-center" onClick={() => onEditExpense(catIndex, expIndex, expense)}>Editar</Button>
+                                        <Button
+                                            variant={'destructive'}
+                                            className="flex gap-2 items-center"
+                                            onClick={() => onDeleteExpense(category.id, expense.id, expense.description)}
+                                        >
+                                            Deletar
+                                        </Button>
+                                        <Button
+                                            variant={'outline'}
+                                            className="flex gap-2 items-center"
+                                            onClick={() => onEditExpense(category.id, expense.id, expense)}
+                                        >
+                                            Editar
+                                        </Button>
                                         <Select
-                                            key={`${catIndex}-${expIndex}-${category.expenses.length}`}
+                                            key={`${category.id}-${expense.id}-${category.expenses.length}`}
                                             onValueChange={(value) => {
-                                                onMoveExpense(catIndex, expIndex, parseInt(value))
+                                                onMoveExpense(category.id, expense.id, value)
                                             }}
                                         >
                                             <SelectTrigger>
@@ -76,17 +88,16 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                             </SelectTrigger>
                                             <SelectContent>
                                                 {budget.categories
-                                                    .filter((_, ci) => ci !== catIndex)
-                                                    .map((cat, ci) => {
-                                                        const realIndex = budget.categories.indexOf(cat)
-                                                        return <SelectItem key={ci} value={realIndex.toString()}>{cat.name}</SelectItem>
-                                                    })}
+                                                    .filter((cat) => cat.id !== category.id)
+                                                    .map((cat) => (
+                                                        <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                                                    ))}
                                             </SelectContent>
                                         </Select>
 
                                         <Select
                                             value={expense.status || 'pendente'}
-                                            onValueChange={(value) => onUpdateStatus(catIndex, expIndex, value)}
+                                            onValueChange={(value) => onUpdateStatus(category.id, expense.id, value)}
                                         >
                                             <SelectTrigger className={`w-36 ${getStatusColor(expense.status || 'pendente')}`}>
                                                 <SelectValue />

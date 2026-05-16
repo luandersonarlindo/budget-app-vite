@@ -7,7 +7,7 @@ import { Label } from './ui/label';
 import { maskCurrency, parseUserValue } from '../utils/formatters';
 
 function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
-    const [categoryIndex, setCategoryIndex] = useState(expenseToEdit ? expenseToEdit.categoryIndex : 0)
+    const [categoryId, setCategoryId] = useState(expenseToEdit?.categoryId || budget?.categories?.[0]?.id || '')
     const [descricao, setDescricao] = useState(expenseToEdit ? expenseToEdit.description : '')
     const [valor, setValor] = useState(expenseToEdit ? new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(expenseToEdit.value) : '0,00')
 
@@ -15,7 +15,7 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
         if (descricao.trim() === '' || valor === '') return
 
         onSave({
-            categoryIndex: parseInt(categoryIndex),
+            categoryId,
             expense: {
                 description: descricao,
                 value: parseUserValue(valor),
@@ -50,15 +50,15 @@ function ExpenseForm({ budget, expenseToEdit, onSave, onCancel }) {
                     <div>
                         <Label className="mb-2" htmlFor="categoria">Categoria</Label>
                         <Select
-                            value={categoryIndex.toString()}
-                            onValueChange={(value) => setCategoryIndex(parseInt(value))}
+                            value={categoryId}
+                            onValueChange={(value) => setCategoryId(value)}
                         >
                             <SelectTrigger>
                                 <SelectValue placeholder="Selecione uma categoria" />
                             </SelectTrigger>
                             <SelectContent>
-                                {budget.categories.map((cat, i) => (
-                                    <SelectItem key={i} value={i.toString()}>{cat.name}</SelectItem>
+                                {budget.categories.map((cat) => (
+                                    <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
