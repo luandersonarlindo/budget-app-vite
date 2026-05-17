@@ -17,6 +17,7 @@ import ExpenseListBusiness from './ExpenseListBusiness'
 import PeriodCharts from './PeriodCharts'
 import PeriodList from './PeriodList'
 import PeriodSummary from './PeriodSummary'
+import ParetoChart from './ParetoChart'
 import { PiggyBank } from 'lucide-react'
 
 function BusinessModule() {
@@ -77,6 +78,80 @@ function BusinessModule() {
             }
         })
     }, [periods])
+
+    const paretoData = useMemo(() => {
+        if (!selectedPeriod || selectedPeriod.expenses.length === 0) {
+            return []
+        }
+
+        // 1. Agrupar despesas por descrição
+        const grouped = selectedPeriod.expenses.reduce((acc, expense) => {
+            const key = expense.description.toLowerCase().trim()
+            if (!acc[key]) {
+                acc[key] = {
+                    description: key.charAt(0).toUpperCase() + key.slice(1),
+                    total: 0
+                }
+            }
+            acc[key].total += Number(expense.value) || 0
+            return acc
+        }, {})
+
+        // 2. Converter para array e ordenar por valor (decrescente)
+        const sorted = Object.values(grouped).sort((a, b) => b.total - a.total)
+
+        // 3. Calcular total de despesas
+        const totalExpenses = sorted.reduce((sum, item) => sum + item.total, 0)
+
+        // 4. Calcular percentual e cumulativo
+        let cumulativoAcumulado = 0
+        const pareto = sorted.map(item => {
+            const percentual = totalExpenses > 0 ? (item.total / totalExpenses) * 100 : 0
+            cumulativoAcumulado += percentual
+            return {
+                description: item.description,
+                total: item.total,
+                percentual: parseFloat(percentual.toFixed(2)),
+                cumulativo: parseFloat(cumulativoAcumulado.toFixed(2))
+            }
+        })
+
+        return pareto
+    }, [selectedPeriod])
+
+    const paretoDataReceitas = useMemo(() => {
+        if (!selectedPeriod || selectedPeriod.incomes.length === 0) {
+            return []
+        }
+
+        const grouped = selectedPeriod.incomes.reduce((acc, income) => {
+            const key = income.description.toLowerCase().trim()
+            if (!acc[key]) {
+                acc[key] = {
+                    description: key.charAt(0).toUpperCase() + key.slice(1),
+                    total: 0
+                }
+            }
+            acc[key].total += Number(income.value) || 0
+            return acc
+        }, {})
+
+        const sorted = Object.values(grouped).sort((a, b) => b.total - a.total)
+        const totalIncomes = sorted.reduce((sum, item) => sum + item.total, 0)
+
+        let cumulativoAcumulado = 0
+        return sorted.map(item => {
+            const percentual = totalIncomes > 0 ? (item.total / totalIncomes) * 100 : 0
+            cumulativoAcumulado += percentual
+
+            return {
+                description: item.description,
+                total: item.total,
+                percentual: parseFloat(percentual.toFixed(2)),
+                cumulativo: parseFloat(cumulativoAcumulado.toFixed(2))
+            }
+        })
+    }, [selectedPeriod])
 
     return (
         <div>
@@ -177,6 +252,22 @@ function BusinessModule() {
                     </div>
 
                     <PeriodSummary totals={totals} />
+
+                    <div className="grid gap-4 lg:grid-cols-2">
+                        <ParetoChart
+                            paretoData={paretoDataReceitas}
+                            title="Diagrama de Pareto - Receitas"
+                            subtitle="Mostra quais fontes de receita concentram a maior parte do faturamento e ajudam a direcionar crescimento."
+                            emptyMessage="Nenhuma receita registrada para este período."
+                        />
+
+                        <ParetoChart
+                            paretoData={paretoData}
+                            title="Diagrama de Pareto - Despesas"
+                            subtitle="Mostra quais custos concentram a maior parte do gasto e ajudam a direcionar contenção."
+                            emptyMessage="Nenhuma despesa registrada para este período."
+                        />
+                    </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                         <Card>
