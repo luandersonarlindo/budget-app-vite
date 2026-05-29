@@ -1,10 +1,43 @@
 import { useEffect, useState } from 'react'
 
+function normalizeBudgets(rawBudgets) {
+    if (!Array.isArray(rawBudgets)) return []
+
+    return rawBudgets.map((budget) => {
+        const normalizedCategories = (budget?.categories || []).map((category) => {
+            const normalizedExpenses = (category?.expenses || []).map((expense) => ({
+                ...expense,
+                id: expense?.id || crypto.randomUUID()
+            }))
+
+            return {
+                ...category,
+                id: category?.id || crypto.randomUUID(),
+                expenses: normalizedExpenses
+            }
+        })
+
+        return {
+            ...budget,
+            id: budget?.id || crypto.randomUUID(),
+            categories: normalizedCategories
+        }
+    })
+}
+
 function useBudgets() {
     const [budgets, setBudgets] = useState(() => {
         const data = localStorage.getItem('budgets')
-        return data ? JSON.parse(data) : []
+        return data ? normalizeBudgets(JSON.parse(data)) : []
     })
+
+    useEffect(() => {
+        const data = localStorage.getItem('budgets')
+        if (!data) return
+
+        const normalized = normalizeBudgets(JSON.parse(data))
+        localStorage.setItem('budgets', JSON.stringify(normalized))
+    }, [])
 
     const addBudget = (budget) => {
         setBudgets((prev) => [...prev, budget])
