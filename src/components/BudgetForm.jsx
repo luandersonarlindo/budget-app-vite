@@ -7,6 +7,13 @@ import { Checkbox } from './ui/checkbox';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { Switch } from './ui/switch';
+import { Info } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from './ui/tooltip'
 
 function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
     const [nome, setNome] = useState(budgetToEdit?.name || '')
@@ -84,21 +91,28 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
         <div>
             <Card>
                 <CardHeader>
-                    <CardTitle>{budgetToEdit ? 'Editar Orçamento' : 'Novo Orçamento'}</CardTitle>
-                </CardHeader>
-
-                {!budgetToEdit && (
-                    <div className="px-6 pb-2">
-                        <p className="text-sm font-medium mb-2">Como cadastrar um orçamento:</p>
-                        <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                            <li>Informe um nome identificador, como "Jan-2026"</li>
-                            <li>Informe o valor total do orçamento do período</li>
-                            <li>Por padrão as categorias seguem a regra 50/20/30</li>
-                            <li>Ative "Personalizar categorias" para escolher quais usar e definir percentuais</li>
-                            <li>A soma dos percentuais das categorias selecionadas deve ser 100%</li>
-                        </ol>
+                    <div className="flex items-center gap-2">
+                        <CardTitle>{budgetToEdit ? 'Editar Orçamento' : 'Novo Orçamento'}</CardTitle>
+                        {!budgetToEdit && (
+                            <TooltipProvider>
+                                <Tooltip>
+                                    <TooltipTrigger asChild>
+                                        <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                        <ol className="text-sm space-y-1 list-decimal list-inside">
+                                            <li>Informe um nome identificador, como "Jan-2026"</li>
+                                            <li>Informe o valor total do orçamento do período</li>
+                                            <li>Por padrão as categorias seguem a regra 50/20/30</li>
+                                            <li>Ative "Personalizar categorias" para escolher quais usar</li>
+                                            <li>A soma dos percentuais deve ser 100%</li>
+                                        </ol>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </TooltipProvider>
+                        )}
                     </div>
-                )}
+                </CardHeader>
 
                 <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
@@ -169,7 +183,7 @@ function BudgetForm({ availableCategories, onSave, onCancel, budgetToEdit }) {
 
                     <div className="col-span-1 md:col-span-2 lg:col-span-3 flex gap-2">
                         <Button onClick={handleSalvar}>Salvar</Button>
-                        <Button variant="destructive" onClick={onCancel}>Cancelar</Button>
+                        <Button variant="ghost" onClick={onCancel}>Cancelar</Button>
                     </div>
 
                 </CardContent>

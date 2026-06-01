@@ -10,18 +10,22 @@ function PeriodCharts({ chartData }) {
                 <CardHeader>
                     <CardTitle>Receitas vs Despesas por período</CardTitle>
                 </CardHeader>
-                <CardContent className="h-80">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Bar dataKey="income" name="Receitas" fill="#22c55e" />
-                            <Bar dataKey="expense" name="Despesas" fill="#ef4444" />
-                        </BarChart>
-                    </ResponsiveContainer>
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[600px] h-80 px-4 pb-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="income" name="Receitas" fill="#22c55e" />
+                                    <Bar dataKey="expense" name="Despesas" fill="#ef4444" />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -29,20 +33,24 @@ function PeriodCharts({ chartData }) {
                 <CardHeader>
                     <CardTitle>Evolução do resultado</CardTitle>
                 </CardHeader>
-                <CardContent className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={chartData}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="name" />
-                            <YAxis />
-                            <Tooltip />
-                            <Legend />
-                            <Line type="linear" dataKey="result" name="Resultado" stroke="#2563eb" strokeWidth={2} />
-                        </LineChart>
-                    </ResponsiveContainer>
+                <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                        <div className="min-w-[600px] h-80 px-4 pb-4">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <LineChart data={chartData}>
+                                    <CartesianGrid strokeDasharray="3 3" />
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Line type="linear" dataKey="result" name="Resultado" stroke="#2563eb" strokeWidth={2} />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        </div>
+                    </div>
                 </CardContent>
             </Card>
-        </div>
+        </div >
     )
 }
 

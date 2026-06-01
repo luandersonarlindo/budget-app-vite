@@ -53,14 +53,15 @@ function BudgetDetailView({
         <div>
             <ErrorAlert message={expenseError} onClose={onClearError} />
 
-            <h2 className="text-3xl font-bold text-black m-6 p-3 text-center">Despesas: {budget.name}</h2>
+            <h2 className="text-2xl font-bold">{budget.name}</h2>
+            <p className="text-sm text-muted-foreground">Despesas do orçamento</p>
 
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-2 mt-2 mb-6">
                 <Button variant="default" onClick={onAddExpense}>
                     Adicionar Despesa
                 </Button>
 
-                <Button variant="secondary" onClick={onBack}>
+                <Button variant="ghost" onClick={onBack}>
                     Voltar
                 </Button>
             </div>

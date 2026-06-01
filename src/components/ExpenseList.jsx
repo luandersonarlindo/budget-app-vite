@@ -1,6 +1,6 @@
 import { Field, FieldLabel } from "@/components/ui/field"
 import { Progress } from "@/components/ui/progress"
-import { Receipt } from 'lucide-react'
+import { Receipt, Trash2 } from 'lucide-react'
 import {
     Select, SelectContent,
     SelectItem, SelectTrigger, SelectValue
@@ -29,21 +29,30 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                     <FieldLabel>
                                         Limite: {formatCurrency(limite)}
                                     </FieldLabel>
-                                    <Progress value={100} className="mt-2" />
+                                    <Progress
+                                        value={percentualGasto}
+                                        className={`mt-2 ${getProgressColor(percentualGasto)}`}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel>
                                         Gasto: {formatCurrency(totalGasto)} ({percentualGasto.toFixed(1)}%)
                                     </FieldLabel>
-                                    <Progress value={percentualGasto} className="mt-2" />
+                                    <Progress
+                                        value={percentualGasto}
+                                        className={`mt-2 ${getProgressColor(percentualGasto)}`}
+                                    />
                                 </Field>
 
                                 <Field>
                                     <FieldLabel>
                                         Disponível: {formatCurrency(disponivel)} ({(100 - percentualGasto).toFixed(1)}%)
                                     </FieldLabel>
-                                    <Progress value={100 - percentualGasto} className="mt-2" />
+                                    <Progress
+                                        value={percentualGasto}
+                                        className={`mt-2 ${getProgressColor(percentualGasto)}`}
+                                    />
                                 </Field>
                             </CardDescription>
                         </CardHeader>
@@ -64,15 +73,8 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                     </CardHeader>
                                     <CardContent className="flex flex-wrap gap-2">
                                         <Button
-                                            variant={'destructive'}
-                                            className="flex gap-2 items-center"
-                                            onClick={() => onDeleteExpense(category.id, expense.id, expense.description)}
-                                        >
-                                            Deletar
-                                        </Button>
-                                        <Button
-                                            variant={'outline'}
-                                            className="flex gap-2 items-center"
+                                            variant="outline"
+                                            size="sm"
                                             onClick={() => onEditExpense(category.id, expense.id, expense)}
                                         >
                                             Editar
@@ -108,6 +110,14 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
                                                 <SelectItem value="nao_pago">Cancelado</SelectItem>
                                             </SelectContent>
                                         </Select>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => onDeleteExpense(category.id, expense.id, expense.description)}
+                                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </Button>
                                     </CardContent>
                                 </Card>
                             )))
@@ -124,6 +134,12 @@ function getStatusColor(status) {
     if (status === 'pago') return 'border-green-500 text-green-700 bg-green-50'
     if (status === 'nao_pago') return 'border-orange-500 text-orange-700 bg-orange-50'
     return 'border-yellow-500 text-yellow-700 bg-yellow-50'
+}
+
+function getProgressColor(percentual) {
+    if (percentual >= 90) return '[&>div]:bg-red-500'
+    if (percentual >= 70) return '[&>div]:bg-yellow-500'
+    return '[&>div]:bg-emerald-500'
 }
 
 export default ExpenseList
