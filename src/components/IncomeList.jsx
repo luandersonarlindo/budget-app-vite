@@ -1,7 +1,7 @@
 import { Button } from './ui/button'
 import { formatCurrency } from '../utils/formatters'
 import EmptyState from './EmptyState'
-import { TrendingUp } from 'lucide-react'
+import { TrendingUp, Pencil, Trash2 } from 'lucide-react'
 
 function IncomeList({ incomes, onEdit, onRemove, onAddNew }) {
     if (!incomes?.length) {
@@ -27,17 +27,19 @@ function IncomeList({ incomes, onEdit, onRemove, onAddNew }) {
                     <div className="flex gap-2">
                         <Button
                             size="sm"
-                            variant="secondary"
+                            variant="ghost"
                             onClick={() => onEdit(income)}
+                            title="Editar"
                         >
-                            Editar
+                            <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                             size="sm"
-                            variant="destructive"
+                            variant="ghost"
                             onClick={() => onRemove(income)}
+                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
-                            Remover
+                            <Trash2 className="h-4 w-4" />
                         </Button>
                     </div>
                 </div>

@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { maskCurrency, parseUserValue } from '../../utils/formatters'
+import { Info } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '../ui/tooltip'
 
 export default function IncomeForm({ income, onSave, onCancel }) {
     const [description, setDescription] = useState(() => income?.description || '')
@@ -12,19 +19,28 @@ export default function IncomeForm({ income, onSave, onCancel }) {
     return (
         <Card className="max-w-xl">
             <CardHeader>
-                <CardTitle>{income ? 'Editar Receita' : 'Nova Receita'}</CardTitle>
+                <div className="flex items-center gap-2">
+                    <CardTitle>{income ? 'Editar Receita' : 'Nova Receita'}</CardTitle>
+                    {!income && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                    <ol className="text-sm space-y-1 list-decimal list-inside">
+                                        <li>Descreva a origem da receita, como "Venda X"</li>
+                                        <li>Informe o valor recebido no período</li>
+                                        <li>O resultado será atualizado automaticamente</li>
+                                    </ol>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
             </CardHeader>
+
             <CardContent className="space-y-4">
-                {!income && (
-                    <div className="px-1">
-                        <p className="text-sm font-medium mb-2">Como cadastrar uma receita:</p>
-                        <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                            <li>Descreva a origem da receita, como "Venda X"</li>
-                            <li>Informe o valor recebido no período</li>
-                            <li>O resultado do período será atualizado automaticamente</li>
-                        </ol>
-                    </div>
-                )}
 
                 <div>
                     <Label className="mb-2" htmlFor="incomeDescription">Descrição</Label>

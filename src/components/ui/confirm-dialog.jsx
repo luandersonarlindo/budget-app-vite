@@ -20,7 +20,9 @@ function ConfirmDialog({
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={onCancel}>{cancelLabel}</AlertDialogCancel>
                     <AlertDialogAction
-                        className={destructive ? 'bg-destructive text-destructive-foreground hover:bg-destructive/90' : undefined}
+                        className={destructive
+                            ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
+                            : undefined}
                         onClick={onConfirm}
                     >
                         {confirmLabel}

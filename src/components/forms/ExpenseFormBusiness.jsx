@@ -4,6 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { maskCurrency, parseUserValue } from '../../utils/formatters'
+import { Info } from 'lucide-react'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '../ui/tooltip'
 
 export default function ExpenseFormBusiness({ expense, onSave, onCancel }) {
     const [description, setDescription] = useState(() => expense?.description || '')
@@ -12,19 +19,28 @@ export default function ExpenseFormBusiness({ expense, onSave, onCancel }) {
     return (
         <Card className="max-w-xl">
             <CardHeader>
-                <CardTitle>{expense ? 'Editar Despesa' : 'Nova Despesa'}</CardTitle>
+                <div className="flex items-center gap-2">
+                    <CardTitle>{expense ? 'Editar Despesa' : 'Nova Despesa'}</CardTitle>
+                    {!expense && (
+                        <TooltipProvider>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Info className="h-4 w-4 text-muted-foreground cursor-help" />
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                    <ol className="text-sm space-y-1 list-decimal list-inside">
+                                        <li>Descreva o custo, como "Fornecedor Y"</li>
+                                        <li>Informe o valor gasto no período</li>
+                                        <li>O resultado do período será atualizado automaticamente</li>
+                                    </ol>
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                    )}
+                </div>
             </CardHeader>
+
             <CardContent className="space-y-4">
-                {!expense && (
-                    <div className="px-1">
-                        <p className="text-sm font-medium mb-2">Como cadastrar uma despesa:</p>
-                        <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-                            <li>Descreva o custo, como "Fornecedor Y"</li>
-                            <li>Informe o valor gasto no período</li>
-                            <li>O resultado do período será atualizado automaticamente</li>
-                        </ol>
-                    </div>
-                )}
 
                 <div>
                     <Label className="mb-2" htmlFor="expenseDescription">Descrição</Label>
