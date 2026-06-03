@@ -6,6 +6,7 @@ import {
     SelectItem, SelectTrigger, SelectValue
 } from '../components/ui/select'
 import { formatCurrency } from '../utils/formatters'
+import { getProgressColor } from '../utils/progressColor'
 import EmptyState from './EmptyState'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
@@ -134,12 +135,6 @@ function getStatusColor(status) {
     if (status === 'pago') return 'border-green-500 text-green-700 bg-green-50'
     if (status === 'nao_pago') return 'border-orange-500 text-orange-700 bg-orange-50'
     return 'border-yellow-500 text-yellow-700 bg-yellow-50'
-}
-
-function getProgressColor(percentual) {
-    if (percentual >= 90) return '[&>div]:bg-red-500'
-    if (percentual >= 70) return '[&>div]:bg-yellow-500'
-    return '[&>div]:bg-emerald-500'
 }
 
 export default ExpenseList
