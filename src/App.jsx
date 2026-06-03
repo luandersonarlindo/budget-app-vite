@@ -1,7 +1,8 @@
+import { LayoutDashboard, TrendingUp, Wallet } from 'lucide-react'
 import { useState } from 'react'
 import BudgetModule from './components/BudgetModule'
 import BusinessModule from './components/BusinessModule'
-import { LayoutDashboard, TrendingUp, Wallet } from 'lucide-react'
+import ThemeToggle from './components/ThemeToggle'
 
 import {
   Sidebar,
@@ -9,7 +10,6 @@ import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarHeader,
-  SidebarFooter,
   SidebarInset,
   SidebarMenu,
   SidebarMenuButton,
@@ -17,7 +17,7 @@ import {
   SidebarProvider,
   SidebarRail,
   SidebarSeparator,
-  SidebarTrigger,
+  SidebarTrigger
 } from './components/ui/sidebar'
 
 function App() {
@@ -28,7 +28,7 @@ function App() {
       <Sidebar collapsible="icon">
         <SidebarHeader>
           <div className="px-2 py-2">
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 group-data-[collapsible=icon]:justify-center">
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-emerald-600">
                 <Wallet className="h-4 w-4 text-white" />
               </div>
@@ -39,7 +39,6 @@ function App() {
             </div>
           </div>
         </SidebarHeader>
-
         <SidebarContent>
           <SidebarGroup>
             <SidebarGroupLabel>Módulos</SidebarGroupLabel>
@@ -71,8 +70,9 @@ function App() {
       </Sidebar>
 
       <SidebarInset>
-        <div className="flex items-center gap-2 p-4 border-b">
+        <div className="flex items-center justify-between gap-2 p-4 border-b">
           <SidebarTrigger />
+          <ThemeToggle />
         </div>
 
         <div className="px-4 pb-6 pt-4">

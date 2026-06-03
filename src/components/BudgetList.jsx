@@ -30,14 +30,14 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy, onAddNew }) {
                             {formatCurrency(budget.value)}
                         </p>
                     </CardHeader>
-                    <CardFooter className="flex items-center gap-2 pt-4 border-t">
+                    <CardFooter className="flex flex-col gap-2 pt-4 border-t">
                         <Button
-                            className="flex-1"
+                            className="w-full"
                             onClick={() => onSelect(budget)}
                         >
                             Ver despesas
                         </Button>
-                        <div className="flex gap-1 shrink-0">
+                        <div className="flex gap-1 w-full justify-end">
                             <Button
                                 variant="outline"
                                 size="icon"

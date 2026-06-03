@@ -27,7 +27,7 @@ function IncomeList({ incomes, onEdit, onRemove, onAddNew }) {
                     <div className="flex gap-2">
                         <Button
                             size="sm"
-                            variant="ghost"
+                            variant="outline"
                             onClick={() => onEdit(income)}
                             title="Editar"
                         >

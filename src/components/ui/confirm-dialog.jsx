@@ -1,4 +1,6 @@
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './alert-dialog'
+import { AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from './alert-dialog'
+
+import { Button } from './button'
 
 function ConfirmDialog({
     open,
@@ -19,14 +21,12 @@ function ConfirmDialog({
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={onCancel}>{cancelLabel}</AlertDialogCancel>
-                    <AlertDialogAction
-                        className={destructive
-                            ? 'text-muted-foreground hover:text-destructive hover:bg-destructive/10'
-                            : undefined}
+                    <Button
+                        variant={destructive ? 'destructive' : 'default'}
                         onClick={onConfirm}
                     >
                         {confirmLabel}
-                    </AlertDialogAction>
+                    </Button>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
