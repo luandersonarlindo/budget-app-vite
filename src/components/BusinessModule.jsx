@@ -1,28 +1,34 @@
 import { useMemo, useState } from 'react'
-
-import { Button } from './ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
-import ConfirmDialog from './ui/confirm-dialog'
-import EmptyState from './EmptyState'
-import { formatCurrency } from '../utils/formatters'
-import PeriodForm from './forms/PeriodForm'
-import IncomeForm from './forms/IncomeForm'
-import ExpenseFormBusiness from './forms/ExpenseFormBusiness'
-import CopyDialog from './ui/copy-dialog'
+import { ChevronDown, Download, PiggyBank } from 'lucide-react'
 import useBusiness from '../hooks/useBusiness'
-import IncomeList from './IncomeList'
+import { ButtonGroup } from '../components/ui/button-group'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '../components/ui/dropdown-menu'
+import { exportCSVBusiness, exportJSON, importJSON } from '../utils/exportImport'
+import EmptyState from './EmptyState'
 import ExpenseListBusiness from './ExpenseListBusiness'
+import ExpenseFormBusiness from './forms/ExpenseFormBusiness'
+import IncomeForm from './forms/IncomeForm'
+import PeriodForm from './forms/PeriodForm'
+import IncomeList from './IncomeList'
+import ParetoChart from './ParetoChart'
 import PeriodCharts from './PeriodCharts'
 import PeriodList from './PeriodList'
 import PeriodSummary from './PeriodSummary'
-import ParetoChart from './ParetoChart'
-import { PiggyBank } from 'lucide-react'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import ConfirmDialog from './ui/confirm-dialog'
+import CopyDialog from './ui/copy-dialog'
 
 function BusinessModule() {
     const {
         periods,
+        setPeriods,
         addPeriod,
         copyPeriod,
         updatePeriod,
@@ -170,13 +176,60 @@ function BusinessModule() {
                         />
                     ) : (
                         <>
-                            <div className="flex flex-wrap gap-2">
-                                <Button onClick={() => {
-                                    setPeriodToEdit(null)
-                                    setTela('formularioPeriodo')
-                                }}>
+
+                            <div className="flex flex-wrap gap-2 mb-4">
+                                <Button onClick={() => { setPeriodToEdit(null); setTela('formularioPeriodo') }}>
                                     Adicionar Período
                                 </Button>
+
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="outline">
+                                            <Download className="h-4 w-4" />
+                                            Exportar / Importar
+                                            <ChevronDown className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent>
+                                        <DropdownMenuItem onClick={() => exportJSON(periods, 'negocios.json')}>
+                                            Exportar JSON
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => exportCSVBusiness(periods, 'negocios.csv')}>
+                                            Exportar CSV
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={() => document.getElementById('import-business').click()}>
+                                            Importar JSON
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                                <input
+                                    id="import-business"
+                                    type="file"
+                                    accept=".json"
+                                    className="hidden"
+                                    onChange={async (e) => {
+                                        const file = e.target.files?.[0]
+                                        if (!file) return
+                                        try {
+                                            const data = await importJSON(file)
+                                            if (Array.isArray(data)) {
+                                                data.forEach(p => {
+                                                    const newPeriod = {
+                                                        ...p,
+                                                        id: crypto.randomUUID(),
+                                                        incomes: (p.incomes || []).map(i => ({ ...i, id: crypto.randomUUID() })),
+                                                        expenses: (p.expenses || []).map(e => ({ ...e, id: crypto.randomUUID() }))
+                                                    }
+                                                    setPeriods(prev => [...prev, newPeriod])
+                                                })
+                                            }
+                                        } catch (err) {
+                                            alert(err.message)
+                                        }
+                                        e.target.value = ''
+                                    }}
+                                />
                             </div>
 
                             <PeriodCharts chartData={chartData} />

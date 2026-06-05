@@ -1,107 +1,108 @@
-# Guia do Projeto (Atualizado)
+# Guia do Projeto (Iniciante em React)
 
-Este documento foi atualizado para refletir mudanças arquiteturais recentes: migração de referências por índice para identificadores estáveis (`id`), reorganização das views de orçamento e o uso intensivo de hooks customizados para separar lógica e persistência.
+## 1) O que é este projeto?
 
-## 1) Visão geral
+Este projeto é um **aplicativo de controle financeiro pessoal** feito com **React + Vite**, organizado em dois módulos:
 
-Aplicativo: gerenciador de orçamentos pessoais (React + Vite).
+**Módulo Orçamentos**: permite criar orçamentos, organizar categorias, adicionar despesas e acompanhar quanto já foi gasto em cada categoria.
 
-Objetivos principais:
-- criar e copiar orçamentos;
-- gerenciar categorias;
-- adicionar, editar, mover e remover despesas;
-- persistir dados no navegador (`localStorage`).
+**Módulo Negócio**: permite registrar receitas e despesas por período, visualizar gráficos de evolução e analisar onde o dinheiro está concentrado (Diagrama de Pareto).
 
-Ponto importante da refatoração recente:
-- todas as entidades principais (orçamentos, categorias, despesas) agora possuem `id` (UUID via `crypto.randomUUID()`), e a comunicação entre hooks e componentes usa esses `id`s — isso evita bugs silenciosos causados por referências por índice em arrays.
+Arquivo principal da aplicação: [src/App.jsx](src/App.jsx)
 
 ---
 
-## 2) Tecnologias
+## 2) Tecnologias usadas (resumo simples)
 
-- **React** + **Vite**
-- **Tailwind CSS**
-- **shadcn/ui + Radix UI** (componentes base)
-- **localStorage** (persistência local)
+- **React**: cria a interface em componentes.
+- **Vite**: ferramenta de desenvolvimento/build.
+- **Tailwind CSS v4**: estilos utilitários (classes prontas).
+- **shadcn/ui + Radix UI**: componentes visuais reutilizáveis (Button, Card, Select, ButtonGroup, DropdownMenu, Progress, etc).
+- **Recharts**: biblioteca de gráficos (AreaChart, ComposedChart, PieChart).
+- **localStorage**: salva dados no navegador (sem backend).
 
-Comandos úteis:
-```bash
-npm install
-npm run dev
-npm run build
+Arquivos importantes:
+- Configuração do Vite: [vite.config.js](vite.config.js)
+- Entrada da aplicação: [src/main.jsx](src/main.jsx)
+- Estilos globais: [src/index.css](src/index.css)
+- Dependências: [package.json](package.json)
+
+---
+
+## 3) Como o projeto foi estruturado
+
+### Módulos (orquestração de telas)
+- [src/components/BudgetModule.jsx](src/components/BudgetModule.jsx) — controla todas as telas de orçamentos
+- [src/components/BusinessModule.jsx](src/components/BusinessModule.jsx) — controla todas as telas de negócio/períodos
+
+### Views específicas de orçamento
+Ficam em [src/components/budget](src/components/budget):
+- `BudgetListView.jsx` — tela da lista de orçamentos (botões de ação, grid de cards)
+- `BudgetDetailView.jsx` — tela de detalhe de um orçamento (despesas por categoria)
+- `CategoryManagerView.jsx` — tela de gerenciamento de categorias
+
+### Componentes de tela
+Ficam em [src/components](src/components):
+- `BudgetList.jsx`, `BudgetForm.jsx`
+- `ExpenseList.jsx`, `ExpenseForm.jsx`
+- `CategoryForm.jsx`
+- `PeriodList.jsx`, `PeriodCharts.jsx`, `PeriodSummary.jsx`, `ParetoChart.jsx`
+- `IncomeList.jsx`, `ExpenseListBusiness.jsx`
+
+### Formulários do módulo Negócio
+Ficam em [src/components/forms](src/components/forms):
+- `PeriodForm.jsx`, `IncomeForm.jsx`, `ExpenseFormBusiness.jsx`
+
+### Hooks (estado e lógica)
+Ficam em [src/hooks](src/hooks):
+- [`useBudgets`](src/hooks/useBudgets.js) — CRUD de orçamentos, categorias e despesas, persistência
+- [`useCategories`](src/hooks/useCategories.js) — CRUD de categorias disponíveis
+- [`useBusiness`](src/hooks/useBusiness.js) — CRUD de períodos, receitas e despesas do módulo Negócio
+
+### Utilitários
+Ficam em [src/utils](src/utils):
+- [`formatters.js`](src/utils/formatters.js) — `formatCurrency`, `maskCurrency`, `parseUserValue`
+- [`exportImport.js`](src/utils/exportImport.js) — `exportJSON`, `exportCSVBudgets`, `exportCSVBusiness`, `importJSON`
+- [`progressColor.js`](src/utils/progressColor.js) — `getProgressColor` (cor dinâmica das barras)
+
+### UI reutilizável (shadcn)
+Fica em [src/components/ui](src/components/ui): Button, Card, Select, Progress, ButtonGroup, DropdownMenu, AlertDialog, etc.
+
+---
+
+## 4) Assuntos de React abordados neste projeto
+
+## ✅ Componentização
+A interface foi quebrada em partes menores e organizadas em camadas: módulos → views → componentes → UI.
+
+Exemplo central: [src/App.jsx](src/App.jsx)
+
+## ✅ Estado com `useState`
+O projeto usa vários estados para controlar tela atual, item selecionado, edição e erros.
+
+### O que é `useState`
+`useState` é um **hook do React** que permite guardar informações dentro do componente que mudam com o tempo e fazem a tela atualizar automaticamente.
+
+### Sintaxe básica
+```jsx
+const [valor, setValor] = useState(valorInicial)
 ```
 
----
+### Exemplo: controle de tela
+```jsx
+const [tela, setTela] = useState('lista')
+```
+Quando `setTela('formulario')` é chamado, o React renderiza novamente mostrando o formulário.
 
-## 3) Estrutura e arquitetura (atual)
-
-Arquitetura em camadas e responsabilidades:
-- **Views / Orquestração**: componentes que definem telas e fluxo (ex.: `BudgetModule`).
-- **Views específicas**: componentes que representam páginas/visões (ex.: `BudgetListView`, `BudgetDetailView`, `CategoryManagerView`).
-- **Componentes UI**: elementos reutilizáveis (botões, cards, selects) sob `src/components/ui`.
-- **Hooks**: encapsulam lógica de negócio e persistência (`src/hooks`).
-- **Utils / Lib**: funções puras e formatação (`src/utils`).
-
-Estrutura de arquivos (principal):
-- `src/main.jsx` — entrada da aplicação
-- `src/App.jsx` — roteamento/tela principal
-- `src/components/` — components e views
-  - `src/components/BudgetModule.jsx` — orquestrador de telas de orçamento
-  - `src/components/BudgetList.jsx` — lista de cartões de orçamento (recebe `budget`/`id`)
-  - `src/components/ExpenseForm.jsx` — formulário de despesa (usa `categoryId`)
-  - `src/components/ExpenseList.jsx` — lista de despesas por categoria
-  - `src/components/CategoryForm.jsx` — formulário de categoria
-  - `src/components/ui/*` — componentes de UI reutilizáveis (Button, Card, Select, etc.)
-  - `src/components/budget/` — views específicas de orçamento
-    - `BudgetListView.jsx` — tela de lista de orçamentos
-    - `BudgetDetailView.jsx` — tela de detalhe de um orçamento (despesas)
-    - `CategoryManagerView.jsx` — tela para gerenciar categorias
-
-  - `src/components/BusinessModule.jsx` — orquestrador do módulo de negócios/períodos
-  - `src/components/period/` — views de período
-    - `PeriodCharts.jsx` — gráficos por período
-    - `PeriodSummary.jsx` — resumo/totais do período
-
-- `src/hooks/` — hooks customizados
-  - `useBudgets.js` — lógica e persistência de orçamentos + operações (add/update/remove/copy/addExpense/updateExpense/moveExpense/…). Todas as funções usam `budgetId`, `categoryId`, `expenseId`.
-  - `useCategories.js` — CRUD de categorias
-  - `useBusiness.js` — lógica de negócios por período (períodos, receitas, despesas, agregações para gráficos)
-  - outros hooks conforme necessário
-
-- `src/utils/formatters.js` — máscaras e parsing de moeda
-
-Design decisions recentes:
-- Identificadores estáveis (`id`) para evitar bugs causados por mudanças de posição em arrays.
-- Separação explícita entre Views (p.ex. `BudgetListView`) e componentes de apresentação (p.ex. `BudgetList`) para permitir testes e reutilização.
-
----
-
-## 4) Padrões de dados e IDs
-
-- Sempre crie um `id` ao inserir uma nova entidade: `crypto.randomUUID()`.
-- `budget` shape (exemplo):
-```js
-{
-  id: 'uuid',
-  name: 'Casa',
-  value: 2500,
-  categories: [ { id: 'cat-uuid', name: 'Moradia', expenses: [ { id: 'exp-uuid', description, value, status } ] } ]
-}
+### Forma recomendada para atualizar com base no valor anterior
+```jsx
+setNumero((anterior) => anterior + 1)
 ```
 
-- Todas as operações de `useBudgets` têm assinaturas baseadas em ids:
-  - `addExpense(budgetId, categoryId, expense)`
-  - `updateExpense(budgetId, categoryId, expenseId, expense)`
-  - `removeExpense(budgetId, categoryId, expenseId)`
-  - `moveExpense(budgetId, fromCategoryId, expenseId, toCategoryId)`
+## ✅ Efeitos com `useEffect`
+`useEffect` executa algo além de renderizar a UI — chamados de "efeitos colaterais".
 
-Motivação: usar ids torna o sistema robusto a reordenações ou filtros das listas.
-
----
-
-## 5) Hooks e persistência (`useEffect`)
-
-- `useBudgets` e `useCategories` utilizam `useEffect` para sincronizar o estado com o `localStorage`:
+No projeto ele é usado para **sincronizar o estado com o localStorage**:
 
 ```jsx
 useEffect(() => {
@@ -109,85 +110,124 @@ useEffect(() => {
 }, [budgets])
 ```
 
-- Recomenda-se executar uma normalização (migração) dos dados carregados do `localStorage` para garantir que entradas antigas recebam `id` quando ausente. Isso evita que a UI espere `id`s inexistentes.
+O segundo argumento `[budgets]` é a **lista de dependências**: o efeito só roda quando `budgets` muda.
 
-Exemplo de normalização no load:
+## ✅ Memoização com `useMemo`
+`useMemo` evita recalcular valores derivados toda vez que o componente renderiza.
 
-```js
-const normalized = (raw || []).map(b => ({
-  id: b.id || crypto.randomUUID(),
-  categories: (b.categories || []).map(c => ({ id: c.id || crypto.randomUUID(), ...c, expenses: (c.expenses || []).map(e => ({ id: e.id || crypto.randomUUID(), ...e })) }))
-}))
-```
-
----
-
-## 6) Performance: `useMemo` e `useCallback`
-
-- Use `useMemo` para valores derivados custosos (ex.: totais por categoria, somas). Exemplo:
+No projeto é usado para calcular totais e dados de gráfico:
 
 ```jsx
-const totals = useMemo(() => computeTotals(budget), [budget])
+const totals = useMemo(() => {
+  const totalIncome = selectedPeriod.incomes.reduce((sum, item) => sum + item.value, 0)
+  const totalExpense = selectedPeriod.expenses.reduce((sum, item) => sum + item.value, 0)
+  return { income: totalIncome, expense: totalExpense, result: totalIncome - totalExpense }
+}, [selectedPeriod])
 ```
 
-- Use `useCallback` ao passar callbacks para componentes filhos que dependem de identidade estável, especialmente quando os filhos usam `React.memo`.
+Só recalcula quando `selectedPeriod` muda.
 
-- Observação específica do projeto: atualmente este código não usa `React.memo` nem `useCallback` em nenhum componente crítico. A recomendação acima é válida como padrão arquitetural, mas não cria expectativa falsa — marque isto como "opcional/para aplicar quando necessário". A única otimização aplicada com frequência aqui é `useMemo` para valores derivados (totais, somas).
+## ✅ Hooks customizados
+A lógica de dados foi separada em hooks para deixar os componentes mais limpos:
 
-- Evite otimizar prematuramente: prefira clareza; aplique memoização quando houver evidência de renderizações desnecessárias.
+- [`useBudgets`](src/hooks/useBudgets.js) — orçamentos, categorias, despesas
+- [`useCategories`](src/hooks/useCategories.js) — categorias disponíveis
+- [`useBusiness`](src/hooks/useBusiness.js) — períodos, receitas, despesas do negócio
 
----
+## ✅ Fluxo por props
+Componentes filhos recebem dados e funções por props (`onSave`, `onDelete`, `onEdit`, `onCopy`, `onSelect`).
 
-## 7) Fluxos principais (resumo)
-
-1. `BudgetModule` orquestra telas: lista → formulário (criar/editar) → detalhe (despesas) → formulário de despesa.
-2. `BudgetListView` exibe a lista e usa `BudgetList` para apresentação dos cartões (cada cartão passa `budget.id` nas ações).
-3. `BudgetDetailView` renderiza `ExpenseList` e delega ações de adicionar/editar/remover/mover despesas usando `budget.id` + `categoryId` + `expenseId`.
-4. `ExpenseForm` recebe `expenseToEdit` com `categoryId` e pré-seleciona a categoria pelo `id`.
-
-
-**Business module (resumo do fluxo):**
-
-1. `BusinessModule` organiza a navegação por períodos (ex.: mês/ano) e agrupa receitas e despesas por período.
-2. `useBusiness` fornece operações para criar/selecionar períodos, adicionar receitas e despesas ao período, e calcular agregações temporais (totais, variações) usadas pelos gráficos.
-3. `PeriodSummary` mostra os totais do período (receitas, despesas, saldo) e métricas derivadas; `PeriodCharts` exibe visualizações (ex.: barras por categoria, linhas por evolução temporal) usando os dados agregados fornecidos por `useBusiness`.
-4. A comunicação com os componentes de visualização usa `periodId`, `entryId` (para receitas/despesas), e `categoryId` quando aplicável — a mesma filosofia de IDs estáveis se aplica para evitar referências por índice.
-
-
+## ✅ Persistência no navegador
+Os dados são salvos no `localStorage` dentro dos hooks, nas chaves:
+- `budgets`
+- `categories`
+- `businessPeriods`
 
 ---
 
-## 8) Testes e validação manual
+## 5) Exportar e importar dados
 
-- Testes manuais sugeridos após a refatoração:
-  - criar um orçamento;
-  - editar o orçamento e confirmar que `selectedBudget` é atualizado quando necessário;
-  - copiar e remover orçamentos;
-  - adicionar/editar/mover/remover despesas entre categorias;
-  - confirmar persistência após reload.
+Disponível nos dois módulos via dropdown **Exportar / Importar**:
 
-- Comandos para rodar localmente:
-```bash
-npm install
-npm run dev
+- **Exportar JSON**: backup completo, pode ser importado de volta.
+- **Exportar CSV**: abre no Excel/Sheets para análise.
+- **Importar JSON**: mescla com os dados existentes. Ao importar, todos os IDs são regenerados com `crypto.randomUUID()` para evitar colisão com dados existentes.
+
+Funções em [`src/utils/exportImport.js`](src/utils/exportImport.js):
+
+```js
+exportJSON(data, filename)
+exportCSVBudgets(budgets, filename)
+exportCSVBusiness(periods, filename)
+importJSON(file) // retorna Promise
 ```
 
 ---
 
-## 9) Boas práticas para contribuir
+## 6) Barras de progresso com cor dinâmica
 
-- Prefira passar `id` em vez de índices quando referenciar itens em listas.
-- Mantenha componentes puros e mova lógica para hooks quando fizer sentido.
-- Documente mudanças de contrato entre componentes (ex.: troca de `categoryIndex` → `categoryId`).
+A função `getProgressColor` em [`src/utils/progressColor.js`](src/utils/progressColor.js) é compartilhada entre `BudgetList` e `ExpenseList`:
+
+```js
+export function getProgressColor(percentual) {
+  if (percentual >= 90) return '[&>div]:bg-red-500'   // vermelho
+  if (percentual >= 70) return '[&>div]:bg-yellow-500' // amarelo
+  return '[&>div]:bg-emerald-500'                      // verde
+}
+```
+
+Centralizar aqui garante que os dois componentes sempre usem os mesmos limiares.
 
 ---
 
-## 10) Próximos passos recomendados
+## 7) Gráficos (Recharts)
 
-- Implementar rotina de normalização de dados no `useBudgets` (se ainda não existir).
-- Adicionar testes unitários para as funções críticas de `useBudgets` (add/update/move/remove/copy).
-- Rodar testes manuais de fluxo após normalização.
+Todos os gráficos usam gradiente e estilo consistente com o tema da aplicação.
+
+**PeriodCharts** — dois gráficos de área com filtro de período:
+- Receitas vs Despesas (`AreaChart`)
+- Evolução do resultado (`AreaChart`)
+
+**PeriodSummary** — rosca de receitas vs despesas (`PieChart`)
+
+**ParetoChart** — gráfico combinado barra + linha (`ComposedChart`) com linha de referência em 80%
 
 ---
 
-Este guia deve servir como referência viva: atualize sempre que fizer mudanças de contrato (props / hooks) ou reorganizar pastas.
+## 8) Como o app funciona (passo a passo)
+
+1. A aplicação inicia em [src/main.jsx](src/main.jsx) e renderiza [`App`](src/App.jsx).
+2. `App` exibe a sidebar e renderiza `BudgetModule` ou `BusinessModule` conforme o módulo ativo.
+3. Cada módulo controla sua própria navegação interna por telas usando `useState`.
+4. Os hooks carregam dados do `localStorage` na inicialização e salvam automaticamente via `useEffect`.
+5. Exportar gera um arquivo para download no browser. Importar lê um arquivo JSON e mescla os dados regenerando IDs.
+
+---
+
+## 9) Pontos didáticos para quem está começando em React
+
+- **Separar UI de lógica**: UI em componentes, lógica em hooks.
+- **IDs estáveis**: sempre use `crypto.randomUUID()` ao criar entidades — nunca referencie por índice de array.
+- **Imutabilidade**: atualize arrays/objetos com `map`, `filter`, `...spread` — nunca mutação direta.
+- **Utilitários puros**: funções sem efeito colateral ficam em `utils/` e são fáceis de testar.
+- **Consistência**: um único `getProgressColor` serve dois componentes — evita divergência.
+
+---
+
+## 10) Resumo final
+
+Este projeto reúne em um app real:
+
+- componentes e módulos organizados em camadas;
+- hooks customizados com persistência;
+- formulários com validações;
+- gráficos com Recharts;
+- exportação/importação de dados (JSON e CSV);
+- componentes avançados do shadcn/ui (ButtonGroup, DropdownMenu);
+- utilitários compartilhados entre componentes.
+
+Se você está começando, o caminho sugerido é:
+1. entender [`App.jsx`](src/App.jsx) e a navegação entre módulos;
+2. ler [`BudgetModule.jsx`](src/components/BudgetModule.jsx) para entender o fluxo de telas;
+3. estudar os hooks em [src/hooks](src/hooks) para entender onde os dados vivem;
+4. por fim, explorar os componentes de apresentação em [src/components](src/components).

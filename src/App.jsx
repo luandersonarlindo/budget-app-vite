@@ -3,7 +3,6 @@ import { useState } from 'react'
 import BudgetModule from './components/BudgetModule'
 import BusinessModule from './components/BusinessModule'
 import ThemeToggle from './components/ThemeToggle'
-
 import {
   Sidebar,
   SidebarContent,

@@ -1,31 +1,28 @@
 # Budget App (React + Vite)
 
-Aplicação de controle financeiro pessoal feita com **React**, com foco em:
+Aplicação de controle financeiro pessoal feita com **React**, com dois módulos principais: **Orçamentos** e **Negócio**.
 
-- criar orçamentos;
-- organizar categorias;
-- registrar despesas por categoria;
-- visualizar quanto foi gasto e quanto ainda está disponível.
+## Visão geral
 
-Este README foi escrito para quem está começando em React.
+**Módulo Orçamentos:**
+1. Crie um orçamento com nome e valor total.
+2. Defina categorias (padrão ou personalizadas).
+3. Adicione despesas dentro das categorias.
+4. Acompanhe limite, gasto e saldo restante por categoria.
 
-## Visão geral do projeto
-
-O app funciona como um pequeno gerenciador de orçamento.
-
-Fluxo principal:
-
-1. Você cria um orçamento (nome e valor total).
-2. Define categorias (padrão ou personalizadas).
-3. Adiciona despesas dentro das categorias.
-4. Acompanha limite, gasto e saldo restante por categoria.
+**Módulo Negócio:**
+1. Crie períodos (ex.: Jan-2025).
+2. Registre receitas e despesas por período.
+3. Visualize gráficos de evolução e Diagrama de Pareto.
+4. Acompanhe resultado líquido e margem por período.
 
 ## Tecnologias utilizadas
 
 - **React 19**: construção da interface por componentes.
 - **Vite 7**: ambiente de desenvolvimento e build.
 - **Tailwind CSS v4**: utilitários de estilo.
-- **shadcn/ui + Radix**: componentes de UI reutilizáveis.
+- **shadcn/ui + Radix UI**: componentes de UI reutilizáveis (Button, Card, Select, ButtonGroup, DropdownMenu, Progress, AlertDialog, etc).
+- **Recharts**: gráficos (AreaChart, ComposedChart, PieChart).
 - **localStorage**: persistência dos dados no navegador.
 
 Arquivos de configuração relevantes:
@@ -61,176 +58,201 @@ npm run lint
 
 ```text
 src/
-	App.jsx
-	main.jsx
-	components/
-		BudgetForm.jsx
-		BudgetList.jsx
-		CategoryForm.jsx
-		CategoryManager.jsx
-		ExpenseForm.jsx
-		ExpenseList.jsx
-		ui/
-	hooks/
-		useBudgets.js
-		useCategories.js
-		useExpenses.js
-	utils/
-		formatters.js
+  App.jsx
+  main.jsx
+  components/
+    BudgetModule.jsx
+    BusinessModule.jsx
+    BudgetList.jsx
+    BudgetForm.jsx
+    ExpenseForm.jsx
+    ExpenseList.jsx
+    CategoryForm.jsx
+    IncomeList.jsx
+    ExpenseListBusiness.jsx
+    PeriodList.jsx
+    PeriodCharts.jsx
+    PeriodSummary.jsx
+    ParetoChart.jsx
+    EmptyState.jsx
+    ThemeToggle.jsx
+    budget/
+      BudgetListView.jsx
+      BudgetDetailView.jsx
+      CategoryManagerView.jsx
+    forms/
+      PeriodForm.jsx
+      IncomeForm.jsx
+      ExpenseFormBusiness.jsx
+    ui/
+      button.tsx
+      card.tsx
+      select.tsx
+      progress.tsx
+      button-group.tsx
+      dropdown-menu.tsx
+      alert-dialog.tsx
+      confirm-dialog.jsx
+      copy-dialog.jsx
+      ...
+  hooks/
+    useBudgets.js
+    useCategories.js
+    useBusiness.js
+  utils/
+    formatters.js
+    exportImport.js
+    progressColor.js
 ```
 
 ### O papel de cada parte
 
-- `App.jsx`: orquestra as telas e estados principais.
-- `components/`: interface visual (formulários, listas, cards e ações).
-- `hooks/`: regras de negócio e manipulação de dados.
-- `utils/`: funções auxiliares de formatação de moeda.
+- `App.jsx`: roteamento entre módulos via sidebar.
+- `BudgetModule.jsx`: orquestra todas as telas do módulo de orçamentos.
+- `BusinessModule.jsx`: orquestra todas as telas do módulo de negócio.
+- `components/budget/`: views específicas de orçamento (lista, detalhe, categorias).
+- `components/forms/`: formulários do módulo de negócio.
+- `hooks/`: regras de negócio e persistência.
+- `utils/formatters.js`: formatação e parsing de moeda.
+- `utils/exportImport.js`: exportação (JSON/CSV) e importação (JSON).
+- `utils/progressColor.js`: cor dinâmica das barras de progresso.
 
 ## Arquitetura e organização
 
-O projeto separa bem responsabilidades:
+O projeto separa responsabilidades em camadas:
 
 1. **UI (Componentes)**: exibe e coleta dados.
-2. **Lógica (Hooks)**: altera dados de orçamento/categoria/despesa.
-3. **Persistência**: `useBudgets` e `useCategories` salvam no `localStorage`.
-
-Isso facilita manutenção e aprendizado.
+2. **Lógica (Hooks)**: altera dados de orçamento/categoria/despesa/período.
+3. **Persistência**: hooks salvam no `localStorage` via `useEffect`.
+4. **Utilitários**: funções puras sem efeitos colaterais.
 
 ## Conceitos de React aplicados
 
 ### 1) `useState`
 
-`useState` guarda informações que mudam durante o uso do app.
-
-No projeto ele controla, por exemplo:
-
-- tela atual (`lista`, `formulario`, `despesas`, etc.);
-- item em edição (orçamento, categoria, despesa);
-- mensagens de erro;
-- itens pendentes de confirmação de remoção.
-
-Exemplo de ideia usada no app:
+Controla tela atual, item em edição, mensagens de erro, itens pendentes de confirmação.
 
 ```jsx
 const [tela, setTela] = useState('lista')
 ```
 
-Quando `setTela` é chamado, o React renderiza novamente com a nova tela.
-
 ### 2) `useEffect`
 
-`useEffect` executa efeitos colaterais (algo além de renderizar UI).
-
-No projeto:
-
-- sempre que os orçamentos mudam, salva no `localStorage`;
-- sempre que as categorias mudam, salva no `localStorage`.
-
-Exemplo de padrão usado:
+Sincroniza estado com `localStorage` sempre que os dados mudam.
 
 ```jsx
 useEffect(() => {
-	localStorage.setItem('budgets', JSON.stringify(budgets))
+  localStorage.setItem('budgets', JSON.stringify(budgets))
 }, [budgets])
 ```
 
-### 3) Props
+### 3) `useMemo`
 
-Dados e funções descem do componente pai para os filhos via props.
+Evita recálculos desnecessários de valores derivados (totais, margens, dados de gráfico).
 
-Exemplos:
+```jsx
+const totals = useMemo(() => computeTotals(selectedPeriod), [selectedPeriod])
+```
 
-- `BudgetList` recebe `onSelect`, `onEdit`, `onDelete`, `onCopy`.
-- `ExpenseForm` recebe `onSave` e `onCancel`.
+### 4) Props
 
-### 4) Imutabilidade
+Dados e funções descem do pai para os filhos via props (`onSave`, `onDelete`, `onEdit`, `onCopy`, etc).
 
-As atualizações são feitas criando novos arrays/objetos com `map`, `filter` e spread (`...`), evitando mutação direta.
+### 5) Imutabilidade
 
-Isso deixa o React mais previsível e ajuda a evitar bugs.
+Atualizações usam `map`, `filter` e spread (`...`) — nunca mutação direta.
 
 ## Regras de negócio implementadas
 
 ### Orçamentos
 
-- criar orçamento;
-- editar orçamento;
-- copiar orçamento;
-- remover orçamento com confirmação.
+- criar, editar, copiar e remover orçamento (com confirmação).
+- barra de progresso com cor dinâmica por percentual gasto.
+- total de despesas e percentual gasto exibidos no card.
 
 ### Categorias
 
-- categorias padrão iniciais:
-	- `Gastos Essenciais` (50%);
-	- `Prioridades Financeiras` (20%);
-	- `Estilo de Vida` (30%).
-- criar categoria personalizada;
-- editar categoria personalizada;
-- impedir remoção de categoria em uso por orçamentos;
-- categorias padrão não ficam disponíveis para remoção na tela de gestão.
+- categorias padrão: `Gastos Essenciais` (50%), `Prioridades Financeiras` (20%), `Estilo de Vida` (30%).
+- criar e editar categorias personalizadas.
+- impedir remoção de categoria em uso por orçamentos.
 
-### Despesas
+### Despesas (Orçamentos)
 
-- criar despesa;
-- editar despesa;
-- remover despesa com confirmação;
-- mover despesa entre categorias;
-- mover + editar em uma única operação.
+- criar, editar, remover (com confirmação), mover entre categorias, mover + editar em uma operação.
+- status: `pendente`, `pago`, `cancelado`.
 
-### Validações
+### Negócio (Períodos)
 
-- nome e valor obrigatórios para orçamento e despesa;
-- se categorias personalizadas estiverem ativas no orçamento, soma dos percentuais deve ser **100%**;
-- percentual de categoria limitado entre 0 e 100.
+- criar, editar, copiar e remover períodos.
+- registrar receitas e despesas por período.
+- cálculo de resultado líquido e margem.
+- gráficos: Receitas vs Despesas (AreaChart), Evolução do resultado (AreaChart), Diagrama de Pareto.
+- filtro de período nos gráficos: Todos / Últimos 3 meses / Último mês.
 
-## Cálculo financeiro no app
+## Exportar e Importar dados
 
-Para cada categoria de um orçamento:
+Disponível nos dois módulos via dropdown **Exportar / Importar**:
 
-- **limite da categoria** = `valor do orçamento * percentual da categoria / 100`
-- **total gasto** = soma dos valores das despesas da categoria
-- **disponível** = `limite - total gasto`
+- **Exportar JSON**: backup completo dos dados (importável de volta).
+- **Exportar CSV**: planilha para abrir no Excel/Sheets.
+- **Importar JSON**: mescla com os dados existentes, gerando novos IDs para evitar colisão.
 
-Também é mostrado o percentual gasto no componente de progresso.
+Funções em `src/utils/exportImport.js`:
+- `exportJSON(data, filename)`
+- `exportCSVBudgets(budgets, filename)`
+- `exportCSVBusiness(periods, filename)`
+- `importJSON(file)` → retorna `Promise`
 
 ## Formatação monetária
 
 No arquivo `src/utils/formatters.js`:
 
-- `formatCurrency(value)`: formata para `pt-BR` (R$);
-- `maskCurrency(value)`: aplica máscara enquanto digita;
+- `formatCurrency(value)`: formata para `pt-BR` (R$).
+- `maskCurrency(value)`: aplica máscara enquanto digita.
 - `parseUserValue(valueStr)`: converte texto em número para salvar.
 
 ## Persistência de dados
 
-Dados salvos no navegador:
+Chaves no `localStorage`:
 
-- chave `budgets`;
-- chave `categories`.
+- `budgets`: orçamentos com categorias e despesas.
+- `categories`: categorias disponíveis.
+- `businessPeriods`: períodos com receitas e despesas.
 
-Ao recarregar a página, o app recupera esses dados automaticamente.
+Ao recarregar a página, o app recupera os dados automaticamente.
+
+## Barras de progresso
+
+A cor da barra é calculada por `src/utils/progressColor.js`, compartilhado entre `BudgetList` e `ExpenseList`:
+
+```js
+export function getProgressColor(percentual) {
+  if (percentual >= 90) return '[&>div]:bg-red-500'
+  if (percentual >= 70) return '[&>div]:bg-yellow-500'
+  return '[&>div]:bg-emerald-500'
+}
+```
 
 ## Observações importantes
 
-- Entrada atual da aplicação: `src/main.jsx`.
-- Existe `src/index.js` (padrão antigo do CRA), mas não é a entrada usada pelo Vite.
-- `src/App.test.js` está com teste de template antigo e não representa o comportamento atual.
-- O script `test` não está definido no `package.json` neste momento.
+- Entrada da aplicação: `src/main.jsx`.
+- `src/index.js` existe mas não é usado (padrão antigo do CRA).
+- `src/App.test.js` está com template antigo e não representa o comportamento atual.
+- O script `test` não está definido no `package.json`.
 
 ## O que aprender com este projeto
 
-Se você está começando, este projeto ensina bem:
-
-1. como dividir tela em componentes;
-2. como usar `useState` e `useEffect` em caso real;
-3. como organizar regras de negócio em hooks;
-4. como tratar formulários e validações;
-5. como manter dados persistentes com `localStorage`.
+1. como dividir tela em componentes e módulos.
+2. como usar `useState`, `useEffect` e `useMemo` em caso real.
+3. como organizar regras de negócio em hooks customizados.
+4. como tratar formulários, validações e fluxos de navegação.
+5. como persistir dados com `localStorage`.
+6. como exportar e importar dados (JSON/CSV) no browser.
+7. como usar componentes avançados do shadcn/ui (ButtonGroup, DropdownMenu).
 
 ## Próximos passos (sugestões)
 
-- adicionar testes reais para componentes e hooks;
-- criar filtros e busca de despesas;
-- extrair tipos para TypeScript;
+- adicionar testes unitários para hooks e funções utilitárias.
+- criar filtros e busca de despesas.
+- extrair tipos para TypeScript.
 - adicionar autenticação e backend no futuro.
-

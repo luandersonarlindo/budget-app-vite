@@ -9,6 +9,7 @@ import BudgetDetailView from './budget/BudgetDetailView'
 import CategoryManagerView from './budget/CategoryManagerView'
 import useBudgets from '../hooks/useBudgets'
 import useCategories from '../hooks/useCategories'
+import { exportJSON, exportCSVBudgets, importJSON } from '../utils/exportImport'
 
 function BudgetModule() {
     const {
@@ -61,6 +62,29 @@ function BudgetModule() {
                     budgets={budgets}
                     onNewBudget={() => setTela('formulario')}
                     onManageCategories={() => setTela('categorias')}
+                    onExportJSON={() => exportJSON(budgets, 'orcamentos.json')}
+                    onExportCSV={() => exportCSVBudgets(budgets, 'orcamentos.csv')}
+                    onImportJSON={async (file) => {
+                        try {
+                            const data = await importJSON(file)
+                            if (Array.isArray(data)) {
+                                data.forEach(b => addBudget({
+                                    ...b,
+                                    id: crypto.randomUUID(),
+                                    categories: (b.categories || []).map(cat => ({
+                                        ...cat,
+                                        id: crypto.randomUUID(),
+                                        expenses: (cat.expenses || []).map(exp => ({
+                                            ...exp,
+                                            id: crypto.randomUUID()
+                                        }))
+                                    }))
+                                }))
+                            }
+                        } catch (e) {
+                            alert(e.message)
+                        }
+                    }}
                     onSelectBudget={(budget) => {
                         setSelectedBudget(budget)
                         setSelectedBudgetId(budget.id)

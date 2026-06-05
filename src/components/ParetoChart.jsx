@@ -10,13 +10,13 @@ import {
     ResponsiveContainer,
     ReferenceLine
 } from 'recharts'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { formatCurrency } from '../utils/formatters'
 
 function ParetoChart({
     paretoData,
     title = 'Diagrama de Pareto',
-    subtitle = 'Visualize quais itens concentram o maior impacto. A linha mostra o percentual acumulado.',
+    subtitle = 'Visualize quais itens concentram o maior impacto.',
     emptyMessage = 'Nenhum registro encontrado para este período.'
 }) {
     if (!paretoData || paretoData.length === 0) {
@@ -24,9 +24,10 @@ function ParetoChart({
             <Card>
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
+                    <CardDescription>{subtitle}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-sm text-gray-500">{emptyMessage}</p>
+                    <p className="text-sm text-muted-foreground">{emptyMessage}</p>
                 </CardContent>
             </Card>
         )
@@ -36,17 +37,11 @@ function ParetoChart({
         if (active && payload && payload.length) {
             const data = payload[0].payload
             return (
-                <div className="rounded border border-gray-300 bg-white p-3 shadow-lg">
-                    <p className="font-semibold">{data.description}</p>
-                    <p className="text-sm text-blue-600">
-                        Valor: {formatCurrency(data.total)}
-                    </p>
-                    <p className="text-sm text-blue-600">
-                        {data.percentual.toFixed(2)}% do total
-                    </p>
-                    <p className="text-sm text-orange-600">
-                        Cumulativo: {data.cumulativo.toFixed(2)}%
-                    </p>
+                <div className="rounded-lg border bg-background p-3 shadow-md text-sm">
+                    <p className="font-medium mb-1">{data.description}</p>
+                    <p className="text-blue-500">Valor: {formatCurrency(data.total)}</p>
+                    <p className="text-blue-500">{data.percentual.toFixed(2)}% do total</p>
+                    <p className="text-orange-500">Cumulativo: {data.cumulativo.toFixed(2)}%</p>
                 </div>
             )
         }
@@ -57,65 +52,84 @@ function ParetoChart({
         <Card>
             <CardHeader>
                 <CardTitle>{title}</CardTitle>
-                <p className="text-sm text-gray-600 mt-2">
-                    {subtitle}
-                </p>
+                <CardDescription>{subtitle}</CardDescription>
             </CardHeader>
-            <CardContent>
-                <ResponsiveContainer width="100%" height={400}>
-                    <ComposedChart
-                        data={paretoData}
-                        margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
-                    >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis
-                            dataKey="description"
-                            angle={-45}
-                            textAnchor="end"
-                            height={100}
-                            interval={0}
-                            tick={{ fontSize: 12 }}
-                        />
-                        <YAxis yAxisId="left" label={{ value: 'Valor (R$)', angle: -90, position: 'insideLeft' }} />
-                        <YAxis
-                            yAxisId="right"
-                            orientation="right"
-                            label={{ value: 'Percentual Cumulativo (%)', angle: 90, position: 'insideRight' }}
-                            domain={[0, 100]}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Legend />
-                        <ReferenceLine
-                            yAxisId="right"
-                            y={80}
-                            stroke="#ef4444"
-                            strokeDasharray="5 5"
-                            label={{
-                                value: '80%',
-                                position: 'insideTopLeft',
-                                fill: '#ef4444',
-                                fontSize: 12
-                            }}
-                        />
-                        <Bar
-                            yAxisId="left"
-                            dataKey="total"
-                            fill="#3b82f6"
-                            name="Valor (R$)"
-                            radius={[8, 8, 0, 0]}
-                        />
-                        <Line
-                            yAxisId="right"
-                            type="linear"
-                            dataKey="cumulativo"
-                            stroke="#f97316"
-                            strokeWidth={3}
-                            name="Cumulativo (%)"
-                            dot={{ fill: '#f97316', r: 5 }}
-                            activeDot={{ r: 7 }}
-                        />
-                    </ComposedChart>
-                </ResponsiveContainer>
+            <CardContent className="p-0">
+                <div className="px-4 pb-4">
+                    <ResponsiveContainer width="100%" height={400}>
+                        <ComposedChart
+                            data={paretoData}
+                            margin={{ top: 20, right: 30, left: 0, bottom: 60 }}
+                        >
+                            <defs>
+                                <linearGradient id="gradPareto" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.8} />
+                                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.4} />
+                                </linearGradient>
+                            </defs>
+                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" strokeOpacity={0.1} />
+                            <XAxis
+                                dataKey="description"
+                                angle={-45}
+                                textAnchor="end"
+                                height={100}
+                                interval={0}
+                                tick={{ fontSize: 12 }}
+                                tickLine={false}
+                                axisLine={false}
+                            />
+                            <YAxis
+                                yAxisId="left"
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={(v) => formatCurrency(v)}
+                                width={90}
+                            />
+                            <YAxis
+                                yAxisId="right"
+                                orientation="right"
+                                domain={[0, 100]}
+                                tickLine={false}
+                                axisLine={false}
+                                tick={{ fontSize: 12 }}
+                                tickFormatter={(v) => `${v}%`}
+                                width={45}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Legend />
+                            <ReferenceLine
+                                yAxisId="right"
+                                y={80}
+                                stroke="#ef4444"
+                                strokeDasharray="5 5"
+                                label={{
+                                    value: '80%',
+                                    position: 'insideTopLeft',
+                                    fill: '#ef4444',
+                                    fontSize: 12
+                                }}
+                            />
+                            <Bar
+                                yAxisId="left"
+                                dataKey="total"
+                                fill="url(#gradPareto)"
+                                name="Valor (R$)"
+                                radius={[6, 6, 0, 0]}
+                            />
+                            <Line
+                                yAxisId="right"
+                                type="linear"
+                                dataKey="cumulativo"
+                                stroke="#f97316"
+                                strokeWidth={2}
+                                name="Cumulativo (%)"
+                                dot={{ fill: '#f97316', r: 4 }}
+                                activeDot={{ r: 6 }}
+                            />
+                        </ComposedChart>
+                    </ResponsiveContainer>
+                </div>
             </CardContent>
         </Card>
     )

@@ -49,19 +49,44 @@ function PeriodSummary({ totals }) {
                     ) : (
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
+                                <defs>
+                                    <linearGradient id="gradReceitas" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#22c55e" stopOpacity={0.9} />
+                                        <stop offset="95%" stopColor="#22c55e" stopOpacity={0.5} />
+                                    </linearGradient>
+                                    <linearGradient id="gradDespesas" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.9} />
+                                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.5} />
+                                    </linearGradient>
+                                </defs>
                                 <Pie
                                     data={pieData}
                                     dataKey="value"
                                     nameKey="name"
-                                    innerRadius={50}
-                                    outerRadius={80}
-                                    paddingAngle={4}
+                                    innerRadius={60}
+                                    outerRadius={90}
+                                    paddingAngle={3}
+                                    strokeWidth={0}
                                 >
-                                    <Cell fill="#22c55e" />
-                                    <Cell fill="#ef4444" />
+                                    <Cell fill="url(#gradReceitas)" />
+                                    <Cell fill="url(#gradDespesas)" />
                                 </Pie>
-                                <Tooltip />
-                                <Legend />
+                                <Tooltip
+                                    formatter={(value) => formatCurrency(value)}
+                                    contentStyle={{
+                                        borderRadius: '8px',
+                                        border: '1px solid var(--border)',
+                                        background: 'var(--background)',
+                                        fontSize: '13px'
+                                    }}
+                                />
+                                <Legend
+                                    iconType="circle"
+                                    iconSize={8}
+                                    formatter={(value) => (
+                                        <span style={{ fontSize: '13px' }}>{value}</span>
+                                    )}
+                                />
                             </PieChart>
                         </ResponsiveContainer>
                     )}
