@@ -28,23 +28,25 @@ function PeriodCharts({ chartData }) {
     return (
         <div className="space-y-4">
             <Card>
-                <CardHeader className="flex flex-row items-start justify-between gap-4">
-                    <div>
-                        <CardTitle>Receitas vs Despesas</CardTitle>
-                        <CardDescription className="mt-1">Comparativo por período</CardDescription>
+                <CardHeader className="pb-2">
+                    <div className="flex flex-col gap-3">
+                        <div>
+                            <CardTitle>Receitas vs Despesas</CardTitle>
+                            <CardDescription className="mt-1">Comparativo por período</CardDescription>
+                        </div>
+                        <ButtonGroup className="w-fit">
+                            {FILTERS.map(f => (
+                                <Button
+                                    key={f.value}
+                                    variant={filter === f.value ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => setFilter(f.value)}
+                                >
+                                    {f.label}
+                                </Button>
+                            ))}
+                        </ButtonGroup>
                     </div>
-                    <ButtonGroup>
-                        {FILTERS.map(f => (
-                            <Button
-                                key={f.value}
-                                variant={filter === f.value ? 'default' : 'outline'}
-                                size="sm"
-                                onClick={() => setFilter(f.value)}
-                            >
-                                {f.label}
-                            </Button>
-                        ))}
-                    </ButtonGroup>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
