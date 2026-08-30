@@ -3,6 +3,7 @@ import { Copy, Pencil, PiggyBank, Trash2 } from 'lucide-react'
 import { formatCurrency } from '../utils/formatters'
 import { getProgressColor } from '../utils/progressColor'
 import { paginateLIFO } from '../utils/pagination'
+import { calculateTotalSpent } from '../utils/expenseCalculations'
 import EmptyState from './EmptyState'
 import PaginationControls from './PaginationControls'
 import { Button } from './ui/button'
@@ -30,8 +31,9 @@ function BudgetList({ budgets, onSelect, onDelete, onEdit, onCopy, onAddNew }) {
         <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {pageItems.map((budget) => {
-                    const totalExpenses = budget.categories?.flatMap(c => c.expenses || []).length ?? 0
-                    const totalSpent = budget.categories?.flatMap(c => c.expenses || []).reduce((sum, e) => sum + (Number(e.value) || 0), 0) ?? 0
+                    const allExpenses = budget.categories?.flatMap(c => c.expenses || []) ?? []
+                    const totalExpenses = allExpenses.length
+                    const totalSpent = calculateTotalSpent(allExpenses)
                     const percentSpent = budget.value > 0 ? (totalSpent / budget.value) * 100 : 0
 
                     return (

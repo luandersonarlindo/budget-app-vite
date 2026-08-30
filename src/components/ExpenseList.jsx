@@ -7,6 +7,7 @@ import {
 } from '../components/ui/select'
 import { formatCurrency } from '../utils/formatters'
 import { getProgressColor } from '../utils/progressColor'
+import { calculateTotalSpent } from '../utils/expenseCalculations'
 import EmptyState from './EmptyState'
 import { Button } from './ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
@@ -16,7 +17,7 @@ function ExpenseList({ budget, onDeleteExpense, onEditExpense, onMoveExpense, on
         <div>
             {budget.categories.map((category) => {
                 const limite = budget.value * category.percent / 100
-                const totalGasto = category.expenses.reduce((acc, exp) => acc + exp.value, 0)
+                const totalGasto = calculateTotalSpent(category.expenses)
 
                 const percentualGasto = limite > 0 ? (totalGasto / limite) * 100 : 0
                 const disponivel = limite - totalGasto
